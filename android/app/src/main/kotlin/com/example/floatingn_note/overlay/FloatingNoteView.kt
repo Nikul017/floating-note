@@ -64,7 +64,7 @@ class FloatingNoteView(
 ) : FrameLayout(context) {
 
     val params: WindowManager.LayoutParams
-    private var isExpanded = !note.isDocked
+    var isExpanded = !note.isDocked
     private var isEditing = false
 
     // Draggable coordinates
@@ -485,7 +485,7 @@ class FloatingNoteView(
         }
     }
 
-    private fun expandFromDock() {
+    fun expandFromDock() {
         isExpanded = true
         isEditing = false
         note.isDocked = false
@@ -542,7 +542,7 @@ class FloatingNoteView(
         applyTheme()
     }
 
-    private fun collapseToDock() {
+    fun collapseToDock() {
         isExpanded = false
         isEditing = false
         note.isDocked = true

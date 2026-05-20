@@ -34,10 +34,40 @@ class OverlayService : Service() {
 
     companion object {
         const val ACTION_QUICK_CREATE = "com.example.floatingn_note.ACTION_QUICK_CREATE"
+        const val ACTION_TOGGLE_VISIBILITY = "com.example.floatingn_note.ACTION_TOGGLE_VISIBILITY"
+        const val ACTION_TOGGLE_DOCK_ALL = "com.example.floatingn_note.ACTION_TOGGLE_DOCK_ALL"
+
         var instance: OverlayService? = null
         var methodChannel: MethodChannel? = null
+        private var overlaysVisible = true
 
         fun isRunning(): Boolean = instance != null
+
+        fun toggleVisibility() {
+            instance?.let { service ->
+                Handler(Looper.getMainLooper()).post {
+                    overlaysVisible = !overlaysVisible
+                    for (view in service.activeOverlays.values) {
+                        view.visibility = if (overlaysVisible) View.VISIBLE else View.GONE
+                    }
+                }
+            }
+        }
+
+        fun toggleDockAll() {
+            instance?.let { service ->
+                Handler(Looper.getMainLooper()).post {
+                    val anyExpanded = service.activeOverlays.values.any { it.isExpanded }
+                    for (view in service.activeOverlays.values) {
+                        if (anyExpanded) {
+                            view.collapseToDock()
+                        } else {
+                            view.expandFromDock()
+                        }
+                    }
+                }
+            }
+        }
 
         // Static methods to trigger overlay updates from MethodChannel
         fun createOrUpdate(note: NoteData) {
@@ -121,13 +151,21 @@ class OverlayService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        if (intent?.action == ACTION_QUICK_CREATE) {
-            // Smoothly collapse the notification shade/drawer automatically!
-            val closeIntent = Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS)
-            sendBroadcast(closeIntent)
+        when (intent?.action) {
+            ACTION_QUICK_CREATE -> {
+                // Smoothly collapse the notification shade/drawer automatically!
+                val closeIntent = Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS)
+                sendBroadcast(closeIntent)
 
-            Handler(Looper.getMainLooper()).post {
-                methodChannel?.invokeMethod("onQuickCreate", null)
+                Handler(Looper.getMainLooper()).post {
+                    methodChannel?.invokeMethod("onQuickCreate", null)
+                }
+            }
+            ACTION_TOGGLE_VISIBILITY -> {
+                toggleVisibility()
+            }
+            ACTION_TOGGLE_DOCK_ALL -> {
+                toggleDockAll()
             }
         }
         return START_STICKY

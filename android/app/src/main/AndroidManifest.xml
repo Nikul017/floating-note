@@ -47,6 +47,45 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+
+        <!-- New Note Widget Provider -->
+        <receiver
+            android:name=".widget.NewNoteWidgetProvider"
+            android:exported="false"
+            android:label="New Note Shortcut">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/new_note_widget_info" />
+        </receiver>
+
+        <!-- Visibles Widget Provider -->
+        <receiver
+            android:name=".widget.VisiblesWidgetProvider"
+            android:exported="false"
+            android:label="Toggle Overlays">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/visibles_widget_info" />
+        </receiver>
+
+        <!-- Control Bar Widget Provider -->
+        <receiver
+            android:name=".widget.ControlBarWidgetProvider"
+            android:exported="false"
+            android:label="Notes Control Bar">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/control_bar_widget_info" />
+        </receiver>
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and

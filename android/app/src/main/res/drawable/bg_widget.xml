@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="#2A2F35" /> <!-- Match screenshot background color exactly: premium deep charcoal/navy -->
+    <corners android:radius="24dp" />
+</shape>
