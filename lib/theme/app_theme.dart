@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../core/typography/app_typography.dart';
 import 'app_colors.dart';
 
 class AppTheme {
@@ -23,7 +24,7 @@ class AppTheme {
         color: AppColors.cardBg,
         elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(20),
           side: const BorderSide(color: AppColors.border, width: 1.5),
         ),
       ),
@@ -32,12 +33,7 @@ class AppTheme {
         elevation: 0,
         centerTitle: true,
         iconTheme: const IconThemeData(color: AppColors.textPrimary),
-        titleTextStyle: GoogleFonts.inter(
-          color: AppColors.textPrimary,
-          fontSize: 20,
-          fontWeight: FontWeight.bold,
-          letterSpacing: -0.5,
-        ),
+        titleTextStyle: AppTypography.headingLarge,
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
@@ -48,10 +44,7 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
-          textStyle: GoogleFonts.inter(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-          ),
+          textStyle: AppTypography.bodySemibold,
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
@@ -69,8 +62,8 @@ class AppTheme {
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
         ),
-        labelStyle: GoogleFonts.inter(color: AppColors.textSecondary),
-        hintStyle: GoogleFonts.inter(color: AppColors.textSecondary),
+        labelStyle: AppTypography.bodyMedium,
+        hintStyle: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondary),
       ),
       floatingActionButtonTheme: FloatingActionButtonThemeData(
         backgroundColor: AppColors.primary,

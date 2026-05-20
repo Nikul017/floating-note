@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../../../core/platform/overlay_channel.dart';
 import '../../../core/settings/settings_manager.dart';
+import '../../../core/spacing/app_spacing.dart';
+import '../../../core/typography/app_typography.dart';
+import '../../../core/motion/app_motion.dart';
 import '../../../theme/app_colors.dart';
+import '../../../widgets/buttons/pressable_scale.dart';
 import '../../notes/providers/notes_provider.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -88,28 +92,26 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> with WidgetsBin
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Settings'),
+        title: Text('Settings', style: AppTypography.headingLarge),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
           onPressed: () => Navigator.pop(context),
         ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20.0),
+        padding: const EdgeInsets.all(AppSpacing.md),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Section title: Permissions & Services
-            const Text(
+            Text(
               'Permissions & Services',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
+              style: AppTypography.headingMedium.copyWith(
                 color: AppColors.primary,
                 letterSpacing: 0.5,
               ),
             ),
-            const SizedBox(height: 12),
+            AppSpacing.h12,
             _buildSettingsCard(
               child: Column(
                 children: [
@@ -121,20 +123,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> with WidgetsBin
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
+                            Text(
                               'Overlay Permission',
-                              style: TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w600,
-                                  color: AppColors.textPrimary),
+                              style: AppTypography.bodySemibold,
                             ),
-                            const SizedBox(height: 4),
+                            AppSpacing.h4,
                             Text(
                               _hasOverlayPermission
                                   ? 'Permission granted successfully'
                                   : 'Required to show floating notes over other apps',
-                              style: TextStyle(
-                                fontSize: 12,
+                              style: AppTypography.caption.copyWith(
                                 color: _hasOverlayPermission
                                     ? Colors.greenAccent
                                     : AppColors.textSecondary,
@@ -143,17 +141,28 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> with WidgetsBin
                           ],
                         ),
                       ),
-                      const SizedBox(width: 8),
+                      AppSpacing.w8,
                       if (!_hasOverlayPermission)
-                        ElevatedButton.icon(
-                          style: ElevatedButton.styleFrom(
+                        PressableScale(
+                          onTap: _requestPermission,
+                          child: Container(
                             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                            backgroundColor: AppColors.primary,
-                            foregroundColor: Colors.white,
+                            decoration: BoxDecoration(
+                              color: AppColors.primary,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.security, size: 14, color: Colors.white),
+                                AppSpacing.w4,
+                                Text(
+                                  'Grant',
+                                  style: AppTypography.captionSemibold.copyWith(color: Colors.white),
+                                ),
+                              ],
+                            ),
                           ),
-                          onPressed: _requestPermission,
-                          icon: const Icon(Icons.security, size: 16),
-                          label: const Text('Grant', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
                         )
                       else
                         const Icon(Icons.check_circle_outline, color: Colors.greenAccent),
@@ -168,21 +177,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> with WidgetsBin
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
+                            Text(
                               'Active Overlay Service',
-                              style: TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.textPrimary,
-                              ),
+                              style: AppTypography.bodySemibold,
                             ),
-                            const SizedBox(height: 4),
+                            AppSpacing.h4,
                             Text(
                               _isServiceActive
                                   ? 'Active overlay service is running'
                                   : 'Start service to allow floating notes',
-                              style: TextStyle(
-                                fontSize: 12,
+                              style: AppTypography.caption.copyWith(
                                 color: _isServiceActive
                                     ? Colors.greenAccent
                                     : AppColors.textSecondary,
@@ -200,41 +204,32 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> with WidgetsBin
                   ),
                 ],
               ),
-            ).animate().fadeIn().slideY(begin: 0.1, end: 0),
-            const SizedBox(height: 32),
+            ).animate().fadeIn(duration: AppMotion.page).slideY(begin: 0.05, end: 0, curve: AppMotion.curvePage),
+            AppSpacing.h32,
 
             // Section title: Appearance Settings
-            const Text(
+            Text(
               'Appearance Settings',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
+              style: AppTypography.headingMedium.copyWith(
                 color: AppColors.primary,
                 letterSpacing: 0.5,
               ),
             ),
-            const SizedBox(height: 12),
+            AppSpacing.h12,
             _buildSettingsCard(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'Global Floating Bubble Size',
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary,
-                    ),
+                    style: AppTypography.bodySemibold,
                   ),
-                  const SizedBox(height: 6),
-                  const Text(
+                  AppSpacing.h4,
+                  Text(
                     'Choose the size of all active floating bubbles on the screen.',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: AppColors.textSecondary,
-                    ),
+                    style: AppTypography.caption.copyWith(color: AppColors.textSecondary),
                   ),
-                  const SizedBox(height: 16),
+                  AppSpacing.h16,
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -244,23 +239,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> with WidgetsBin
                     ],
                   ),
                   const Divider(color: AppColors.border, height: 32),
-                  const Text(
+                  Text(
                     'Global Floating Bubble Shape',
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary,
-                    ),
+                    style: AppTypography.bodySemibold,
                   ),
-                  const SizedBox(height: 6),
-                  const Text(
+                  AppSpacing.h4,
+                  Text(
                     'Choose the shape of the docked floating notes.',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: AppColors.textSecondary,
-                    ),
+                    style: AppTypography.caption.copyWith(color: AppColors.textSecondary),
                   ),
-                  const SizedBox(height: 16),
+                  AppSpacing.h16,
                   Wrap(
                     spacing: 8,
                     runSpacing: 8,
@@ -273,7 +261,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> with WidgetsBin
                   ),
                 ],
               ),
-            ).animate(delay: 100.ms).fadeIn().slideY(begin: 0.1, end: 0),
+            ).animate(delay: 80.ms).fadeIn(duration: AppMotion.page).slideY(begin: 0.05, end: 0, curve: AppMotion.curvePage),
           ],
         ),
       ),
@@ -283,14 +271,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> with WidgetsBin
   Widget _buildSettingsCard({required Widget child}) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
         color: AppColors.cardBg,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(color: AppColors.border, width: 1.5),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.15),
+            color: Colors.black.withOpacity(0.12),
             blurRadius: 16,
             spreadRadius: -4,
             offset: const Offset(0, 8),
@@ -304,7 +292,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> with WidgetsBin
   Widget _buildSizeOption(int size, String label, int currentSize) {
     final isSelected = currentSize == size;
     return Expanded(
-      child: GestureDetector(
+      child: PressableScale(
         onTap: () async {
           await ref.read(settingsProvider.notifier).updateBubbleSize(size);
           if (_isServiceActive) {
@@ -315,7 +303,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> with WidgetsBin
           margin: const EdgeInsets.symmetric(horizontal: 4),
           padding: const EdgeInsets.symmetric(vertical: 12),
           decoration: BoxDecoration(
-            color: isSelected ? AppColors.primary.withOpacity(0.15) : Colors.transparent,
+            color: isSelected ? AppColors.primary.withOpacity(0.12) : Colors.transparent,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: isSelected ? AppColors.primary : AppColors.border,
@@ -325,10 +313,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> with WidgetsBin
           alignment: Alignment.center,
           child: Text(
             label,
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+            style: AppTypography.captionSemibold.copyWith(
               color: isSelected ? AppColors.primary : AppColors.textSecondary,
+              fontSize: 12,
             ),
           ),
         ),
@@ -338,19 +325,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> with WidgetsBin
 
   Widget _buildShapeOption(String shapeValue, String label, IconData icon, String currentShape) {
     final isSelected = currentShape == shapeValue;
-    return InkWell(
+    return PressableScale(
       onTap: () async {
         await ref.read(settingsProvider.notifier).updateBubbleShape(shapeValue);
         if (_isServiceActive) {
           _syncAllOverlaysWithSettings();
         }
       },
-      borderRadius: BorderRadius.circular(12),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        duration: AppMotion.fast,
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary.withOpacity(0.15) : Colors.transparent,
+          color: isSelected ? AppColors.primary.withOpacity(0.12) : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: isSelected ? AppColors.primary : AppColors.border,
@@ -361,19 +347,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> with WidgetsBin
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
-              isSelected && icon == Icons.favorite_border ? Icons.favorite : 
-              isSelected && icon == Icons.star_border ? Icons.star : 
               icon,
-              size: 16,
+              size: 15,
               color: isSelected ? AppColors.primary : AppColors.textSecondary,
             ),
-            const SizedBox(width: 6),
+            AppSpacing.w8,
             Text(
               label,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+              style: AppTypography.captionSemibold.copyWith(
                 color: isSelected ? AppColors.primary : AppColors.textSecondary,
+                fontSize: 11,
               ),
             ),
           ],

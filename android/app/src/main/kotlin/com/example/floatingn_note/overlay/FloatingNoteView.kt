@@ -89,6 +89,7 @@ class FloatingNoteView(
     private lateinit var editBarPalette: TextView
     private lateinit var editBarCheck: TextView
     private lateinit var editColorPicker: LinearLayout
+    private lateinit var checklistContainer: LinearLayout
 
     init {
         // Build the standard window layout parameters
@@ -363,6 +364,17 @@ class FloatingNoteView(
             visibility = if (isEditing) View.VISIBLE else View.GONE
         }
         scrollContainer.addView(contentEdit)
+
+        // Checklist Container
+        checklistContainer = LinearLayout(context).apply {
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            )
+            orientation = LinearLayout.VERTICAL
+            visibility = if (note.type == "checklist") View.VISIBLE else View.GONE
+        }
+        scrollContainer.addView(checklistContainer)
     }
 
 
@@ -389,6 +401,10 @@ class FloatingNoteView(
         contentTextView.setTextColor(Color.parseColor(descHex))
         contentEdit.setTextColor(Color.parseColor(descHex))
         contentEdit.setHintTextColor(Color.parseColor(if (isDarkNote) "#80B0BEC5" else "#80455A64"))
+
+        if (note.type == "checklist") {
+            populateChecklist()
+        }
 
         // Set mini-dock bubble background
         val strokeColor = Color.parseColor(if (isDarkNote) "#FFFFFF" else "#7C4DFF")
@@ -417,8 +433,16 @@ class FloatingNoteView(
                 editBarPalette.visibility = View.VISIBLE
                 editBarCheck.visibility = View.VISIBLE
                 
-                contentTextView.visibility = View.GONE
-                contentEdit.visibility = View.VISIBLE
+                if (note.type == "checklist") {
+                    contentTextView.visibility = View.GONE
+                    contentEdit.visibility = View.GONE
+                    checklistContainer.visibility = View.VISIBLE
+                    populateChecklist()
+                } else {
+                    contentTextView.visibility = View.GONE
+                    contentEdit.visibility = View.VISIBLE
+                    checklistContainer.visibility = View.GONE
+                }
                 
                 params.width = dpToPx(300)
                 params.height = WindowManager.LayoutParams.WRAP_CONTENT
@@ -428,8 +452,16 @@ class FloatingNoteView(
                 editBarPalette.visibility = View.GONE
                 editBarCheck.visibility = View.GONE
                 
-                contentTextView.visibility = View.VISIBLE
-                contentEdit.visibility = View.GONE
+                if (note.type == "checklist") {
+                    contentTextView.visibility = View.GONE
+                    contentEdit.visibility = View.GONE
+                    checklistContainer.visibility = View.VISIBLE
+                    populateChecklist()
+                } else {
+                    contentTextView.visibility = View.VISIBLE
+                    contentEdit.visibility = View.GONE
+                    checklistContainer.visibility = View.GONE
+                }
                 
                 editColorPicker.visibility = View.GONE
                 params.width = WindowManager.LayoutParams.WRAP_CONTENT
@@ -442,6 +474,7 @@ class FloatingNoteView(
             editBarCheck.visibility = View.GONE
             contentTextView.visibility = View.GONE
             contentEdit.visibility = View.GONE
+            checklistContainer.visibility = View.GONE
             editColorPicker.visibility = View.GONE
             dockBubble.visibility = View.VISIBLE
             params.width = dpToPx(note.bubbleSize)
@@ -533,10 +566,34 @@ class FloatingNoteView(
 
         // Sync text from note model
         titleEdit.setText(note.title)
-        contentEdit.setText(note.content)
-        val focusTarget = if (focusTitle) titleEdit else contentEdit
-        focusTarget.requestFocus()
-        focusTarget.setSelection(focusTarget.text.length)
+        if (note.type != "checklist") {
+            contentEdit.setText(note.content)
+            val focusTarget = if (focusTitle) titleEdit else contentEdit
+            focusTarget.requestFocus()
+            focusTarget.setSelection(focusTarget.text.length)
+        } else {
+            val focusTarget = if (focusTitle) titleEdit else {
+                var firstEdit: EditText? = null
+                for (i in 0 until checklistContainer.childCount) {
+                    val row = checklistContainer.getChildAt(i) as? LinearLayout ?: continue
+                    for (j in 0 until row.childCount) {
+                        val child = row.getChildAt(j)
+                        if (child is EditText) {
+                            firstEdit = child
+                            break
+                        }
+                    }
+                    if (firstEdit != null) break
+                }
+                firstEdit
+            }
+            if (focusTarget != null) {
+                focusTarget.requestFocus()
+                focusTarget.setSelection(focusTarget.text.length)
+            } else {
+                titleEdit.requestFocus()
+            }
+        }
 
         // Show keyboard
         val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
@@ -558,13 +615,40 @@ class FloatingNoteView(
 
     private fun saveInlineEdits() {
         val newTitle = titleEdit.text.toString().trim()
-        val newContent = contentEdit.text.toString().trim()
-
         note.title = newTitle.ifEmpty { "Sticky Note" }
-        note.content = newContent
-
         titleView.text = note.title
-        contentTextView.text = if (note.content.isNotEmpty()) note.content else "Click to edit..."
+
+        if (note.type == "checklist") {
+            val newChecklist = mutableListOf<ChecklistItemData>()
+            var childCount = checklistContainer.childCount
+            if (isEditing) {
+                childCount-- // exclude the "Add Item" row
+            }
+            for (i in 0 until childCount) {
+                val row = checklistContainer.getChildAt(i) as? LinearLayout ?: continue
+                var checked = false
+                var textVal = ""
+                for (j in 0 until row.childCount) {
+                    val child = row.getChildAt(j)
+                    if (child is CheckBox) {
+                        checked = child.isChecked
+                    } else if (child is EditText) {
+                        textVal = child.text.toString().trim()
+                    } else if (child is TextView && child.text != "+" && child.text != "Add Item" && textVal.isEmpty()) {
+                        textVal = child.text.toString().trim()
+                    }
+                }
+                val originalItem = note.checklist.getOrNull(i)
+                val itemId = originalItem?.id ?: UUID.randomUUID().toString()
+                val itemIndent = originalItem?.indent ?: 0
+                newChecklist.add(ChecklistItemData(itemId, note.id, textVal, checked, itemIndent))
+            }
+            note.checklist = newChecklist
+        } else {
+            val newContent = contentEdit.text.toString().trim()
+            note.content = newContent
+            contentTextView.text = if (note.content.isNotEmpty()) note.content else "Click to edit..."
+        }
 
         disableFocus()
         onUpdate(note)
@@ -863,6 +947,206 @@ class FloatingNoteView(
                     Color.parseColor("#FFF59D")
                 }
             }
+        }
+    }
+
+    private fun populateChecklist() {
+        checklistContainer.removeAllViews()
+        
+        val isDarkNote = note.color.equals("charcoal", true) || note.color.equals("glass", true)
+        val textHex = if (isDarkNote) "#ECEFF1" else "#263238"
+        val descHex = if (isDarkNote) "#B0BEC5" else "#455A64"
+        val textColor = Color.parseColor(descHex)
+        val titleColor = Color.parseColor(textHex)
+        val checkedColor = Color.parseColor(if (isDarkNote) "#60B0BEC5" else "#60455A64")
+
+        for ((index, item) in note.checklist.withIndex()) {
+            val row = LinearLayout(context).apply {
+                layoutParams = LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                ).apply {
+                    topMargin = dpToPx(1)
+                    bottomMargin = dpToPx(1)
+                }
+                orientation = LinearLayout.HORIZONTAL
+                gravity = Gravity.CENTER_VERTICAL
+            }
+
+
+
+            // Checkbox
+            val checkbox = CheckBox(context).apply {
+                layoutParams = LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                ).apply {
+                    setPadding(0, 0, 0, 0)
+                }
+                isChecked = item.checked
+                
+                // Style button tint with premium color tokens
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+                    buttonTintList = android.content.res.ColorStateList.valueOf(
+                        if (item.checked) checkedColor else textColor
+                    )
+                }
+            }
+            row.addView(checkbox)
+
+            if (isEditing) {
+                val itemEdit = EditText(context).apply {
+                    layoutParams = LinearLayout.LayoutParams(
+                        0,
+                        LinearLayout.LayoutParams.WRAP_CONTENT,
+                        1f
+                    ).apply {
+                        marginStart = dpToPx(4)
+                        marginEnd = dpToPx(4)
+                    }
+                    setText(item.text)
+                    textSize = 13f
+                    setTextColor(textColor)
+                    background = null
+                    hint = "Item..."
+                    setHintTextColor(Color.parseColor(if (isDarkNote) "#50B0BEC5" else "#50455A64"))
+                }
+                
+                checkbox.setOnCheckedChangeListener { _, isChecked ->
+                    if (item.checked != isChecked) {
+                        item.checked = isChecked
+                        if (isChecked) {
+                            itemEdit.setTextColor(checkedColor)
+                            itemEdit.paintFlags = itemEdit.paintFlags or android.graphics.Paint.STRIKE_THRU_TEXT_FLAG
+                        } else {
+                            itemEdit.setTextColor(textColor)
+                            itemEdit.paintFlags = itemEdit.paintFlags and android.graphics.Paint.STRIKE_THRU_TEXT_FLAG.inv()
+                        }
+                    }
+                }
+                
+                if (item.checked) {
+                    itemEdit.paintFlags = itemEdit.paintFlags or android.graphics.Paint.STRIKE_THRU_TEXT_FLAG
+                    itemEdit.setTextColor(checkedColor)
+                } else {
+                    itemEdit.paintFlags = itemEdit.paintFlags and android.graphics.Paint.STRIKE_THRU_TEXT_FLAG.inv()
+                    itemEdit.setTextColor(textColor)
+                }
+                
+                row.addView(itemEdit)
+
+                // Delete button for this item
+                val deleteItemBtn = TextView(context).apply {
+                    layoutParams = LinearLayout.LayoutParams(dpToPx(24), dpToPx(24))
+                    gravity = Gravity.CENTER
+                    text = "×"
+                    textSize = 18f
+                    setTextColor(textColor)
+                    setOnClickListener {
+                        note.checklist.removeAt(index)
+                        populateChecklist()
+                    }
+                }
+                row.addView(deleteItemBtn)
+            } else {
+                val itemText = TextView(context).apply {
+                    layoutParams = LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT,
+                        LinearLayout.LayoutParams.WRAP_CONTENT
+                    ).apply {
+                        marginStart = dpToPx(4)
+                        marginEnd = dpToPx(4)
+                    }
+                    text = item.text
+                    textSize = 13f
+                    setTextColor(if (item.checked) checkedColor else textColor)
+                    if (item.checked) {
+                        paintFlags = paintFlags or android.graphics.Paint.STRIKE_THRU_TEXT_FLAG
+                    } else {
+                        paintFlags = paintFlags and android.graphics.Paint.STRIKE_THRU_TEXT_FLAG.inv()
+                    }
+                }
+                
+                checkbox.setOnCheckedChangeListener { _, isChecked ->
+                    if (item.checked != isChecked) {
+                        item.checked = isChecked
+                        onUpdate(note)
+                        if (isChecked) {
+                            itemText.setTextColor(checkedColor)
+                            itemText.paintFlags = itemText.paintFlags or android.graphics.Paint.STRIKE_THRU_TEXT_FLAG
+                            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+                                checkbox.buttonTintList = android.content.res.ColorStateList.valueOf(checkedColor)
+                            }
+                        } else {
+                            itemText.setTextColor(textColor)
+                            itemText.paintFlags = itemText.paintFlags and android.graphics.Paint.STRIKE_THRU_TEXT_FLAG.inv()
+                            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+                                checkbox.buttonTintList = android.content.res.ColorStateList.valueOf(textColor)
+                            }
+                        }
+                    }
+                }
+                
+                row.addView(itemText)
+            }
+
+            checklistContainer.addView(row)
+        }
+
+        // Add item button in edit mode
+        if (isEditing) {
+            val addItemRow = LinearLayout(context).apply {
+                layoutParams = LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                ).apply {
+                    topMargin = dpToPx(6)
+                    bottomMargin = dpToPx(4)
+                    marginStart = dpToPx(6)
+                }
+                orientation = LinearLayout.HORIZONTAL
+                gravity = Gravity.CENTER_VERTICAL
+                setOnClickListener {
+                    note.checklist.add(ChecklistItemData(
+                        id = UUID.randomUUID().toString(),
+                        noteId = note.id,
+                        text = "",
+                        checked = false,
+                        indent = 0
+                    ))
+                    populateChecklist()
+                    post {
+                        val newCount = checklistContainer.childCount
+                        if (newCount > 1) {
+                            val newRow = checklistContainer.getChildAt(newCount - 2) as? LinearLayout
+                            if (newRow != null) {
+                                for (i in 0 until newRow.childCount) {
+                                    val child = newRow.getChildAt(i)
+                                    if (child is EditText) {
+                                        child.requestFocus()
+                                        break
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            val plusIcon = TextView(context).apply {
+                text = "+ "
+                textSize = 14f
+                setTextColor(titleColor)
+                setTypeface(null, android.graphics.Typeface.BOLD)
+            }
+            addItemRow.addView(plusIcon)
+            
+            val addText = TextView(context).apply {
+                text = "Add Item"
+                textSize = 13f
+                setTextColor(textColor)
+            }
+            addItemRow.addView(addText)
+            checklistContainer.addView(addItemRow)
         }
     }
 }

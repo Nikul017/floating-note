@@ -57,6 +57,31 @@ class AppColors {
     return const Color(0xFF263238); // Dark text for pastel notes
   }
 
+  // Soft dark-theme card background tint mapped from sticky note color
+  static Color getEditorBgTint(String colorName, {double opacity = 0.08}) {
+    final baseColor = getStickyColor(colorName);
+    final name = colorName.toLowerCase();
+    if (name == 'charcoal' || name == 'glass' || name == 'indigo' || name == 'maroon' || name == 'dark_mint') {
+      return baseColor.withOpacity(0.4); // Dark notes are already dark, give them higher opacity
+    }
+    return baseColor.withOpacity(opacity);
+  }
+
+  // Get matching outline border color for cards and editors
+  static Color getBorderColor(String colorName, {bool isDarkTheme = true}) {
+    final baseColor = getStickyColor(colorName);
+    final name = colorName.toLowerCase();
+    if (name == 'charcoal' || name == 'glass' || name == 'indigo' || name == 'maroon' || name == 'dark_mint') {
+      return border;
+    }
+    return baseColor.withOpacity(isDarkTheme ? 0.3 : 0.6);
+  }
+
+  // Soft ambient glow color
+  static Color getGlowColor(String colorName) {
+    return getStickyColor(colorName).withOpacity(0.18);
+  }
+
   // List of colors for selection in Flutter toolbar
   static List<String> get availableColors => stickyNoteColors.keys.toList();
 }

@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../../../theme/app_colors.dart';
 import '../../../core/settings/settings_manager.dart';
+import '../../../core/spacing/app_spacing.dart';
+import '../../../core/typography/app_typography.dart';
+import '../../../core/motion/app_motion.dart';
+import '../../../widgets/buttons/pressable_scale.dart';
+import '../../../widgets/cards/premium_note_card.dart';
 import '../../notes/models/note_model.dart';
 import '../../notes/providers/notes_provider.dart';
 import '../../notes/screens/note_editor_screen.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'settings_screen.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
@@ -19,18 +23,26 @@ class DashboardScreen extends ConsumerStatefulWidget {
 class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final TextEditingController _searchController = TextEditingController();
+  final FocusNode _searchFocusNode = FocusNode();
   String _searchQuery = '';
   String _selectedCategory = 'all'; // 'all', 'pinned', 'checklist', 'reminder', 'temporary' or 'folder:name'
+  bool _isSearchFocused = false;
 
   @override
   void initState() {
     super.initState();
     Future.microtask(() => ref.read(notesProvider.notifier).loadNotes());
+    _searchFocusNode.addListener(() {
+      setState(() {
+        _isSearchFocused = _searchFocusNode.hasFocus;
+      });
+    });
   }
 
   @override
   void dispose() {
     _searchController.dispose();
+    _searchFocusNode.dispose();
     super.dispose();
   }
 
@@ -79,7 +91,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               child: filteredNotes.isEmpty
                   ? _buildEmptyState()
                   : SingleChildScrollView(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.md,
+                        vertical: AppSpacing.xs,
+                      ),
                       child: isGridView
                           ? _buildPinterestGrid(filteredNotes)
                           : _buildListView(filteredNotes),
@@ -99,17 +114,28 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   }
 
   Widget _buildTopSearchBar(AppSettings settings) {
-    return Container(
-      margin: const EdgeInsets.only(left: 16, right: 16, top: 12, bottom: 8),
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+    return AnimatedContainer(
+      duration: AppMotion.micro,
+      margin: const EdgeInsets.only(
+        left: AppSpacing.md,
+        right: AppSpacing.md,
+        top: AppSpacing.sm,
+        bottom: AppSpacing.xs,
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs, vertical: 2),
       decoration: BoxDecoration(
         color: AppColors.cardBg,
         borderRadius: BorderRadius.circular(30),
-        border: Border.all(color: AppColors.border, width: 1.5),
+        border: Border.all(
+          color: _isSearchFocused ? AppColors.primary : AppColors.border,
+          width: 1.5,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
-            blurRadius: 10,
+            color: _isSearchFocused 
+                ? AppColors.primary.withOpacity(0.15) 
+                : Colors.black.withOpacity(0.2),
+            blurRadius: _isSearchFocused ? 12 : 10,
             offset: const Offset(0, 4),
           ),
         ],
@@ -125,17 +151,22 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           Expanded(
             child: TextField(
               controller: _searchController,
+              focusNode: _searchFocusNode,
               onChanged: (val) {
                 setState(() {
                   _searchQuery = val.trim();
                 });
               },
-              style: const TextStyle(color: AppColors.textPrimary, fontSize: 15),
-              decoration: const InputDecoration(
+              style: AppTypography.bodyLarge.copyWith(fontSize: 15),
+              decoration: InputDecoration(
                 hintText: 'Search your notes...',
-                hintStyle: TextStyle(color: AppColors.textSecondary, fontSize: 15),
+                hintStyle: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondary, fontSize: 15),
                 border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                filled: false,
                 isDense: true,
+                contentPadding: EdgeInsets.zero,
               ),
             ),
           ),
@@ -151,7 +182,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             ),
           IconButton(
             icon: Icon(
-              settings.isGridView ? Icons.view_stream_outlined : Icons.dashboard_outlined,
+              settings.isGridView ? Icons.view_stream_rounded : Icons.dashboard_rounded,
               color: AppColors.textPrimary,
             ),
             onPressed: () {
@@ -159,7 +190,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             },
           ),
           IconButton(
-            icon: const Icon(Icons.settings_outlined, color: AppColors.textPrimary),
+            icon: const Icon(Icons.settings_rounded, color: AppColors.textPrimary),
             onPressed: () {
               Navigator.push(
                 context,
@@ -185,16 +216,22 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     }
     
     return Padding(
-      padding: const EdgeInsets.only(left: 20.0, right: 20.0, bottom: 8.0),
+      padding: const EdgeInsets.only(
+        left: AppSpacing.xl,
+        right: AppSpacing.xl,
+        bottom: AppSpacing.xs,
+      ),
       child: Row(
         children: [
           Chip(
-            avatar: const Icon(Icons.filter_list, size: 14, color: AppColors.primary),
+            avatar: const Icon(Icons.filter_list_rounded, size: 14, color: AppColors.primary),
             label: Text(
               label,
-              style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+              style: AppTypography.bodySemibold.copyWith(color: Colors.white, fontSize: 11),
             ),
-            backgroundColor: AppColors.primary.withOpacity(0.2),
+            backgroundColor: AppColors.primary.withOpacity(0.15),
+            side: const BorderSide(color: AppColors.border, width: 1),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             deleteIcon: const Icon(Icons.close, size: 14, color: Colors.white70),
             onDeleted: () {
               setState(() {
@@ -210,9 +247,11 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   Widget _buildDrawer(AppSettings settings) {
     return Drawer(
       backgroundColor: AppColors.background,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.horizontal(right: Radius.circular(24)),
+      ),
       child: Column(
         children: [
-          // Elegant Material Keep style drawer header
           DrawerHeader(
             decoration: const BoxDecoration(
               color: AppColors.cardBg,
@@ -225,33 +264,30 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 Row(
                   children: [
                     const Text('💡', style: TextStyle(fontSize: 28)),
-                    const SizedBox(width: 10),
+                    AppSpacing.w12,
                     Text(
                       'FloatNoteX',
-                      style: GoogleFonts.outfit(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
+                      style: AppTypography.displayMedium.copyWith(
                         color: AppColors.textPrimary,
-                        letterSpacing: 0.5,
+                        fontSize: 24,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 6),
-                const Text(
+                AppSpacing.h8,
+                Text(
                   'Your Floating Productivity Panel',
-                  style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                  style: AppTypography.caption.copyWith(color: AppColors.textSecondary),
                 ),
               ],
             ),
           ),
           Expanded(
             child: ListView(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
               children: [
-                // Core Categories
                 _buildDrawerItem(
-                  icon: Icons.lightbulb_outline,
+                  icon: Icons.lightbulb_outline_rounded,
                   title: 'All Notes',
                   isSelected: _selectedCategory == 'all',
                   onTap: () {
@@ -296,19 +332,17 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                   },
                 ),
                 const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                  padding: EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.xs),
                   child: Divider(color: AppColors.border, thickness: 1.5),
                 ),
-                // Folders Header Row
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.xs),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
+                      Text(
                         'FOLDERS / LABELS',
-                        style: TextStyle(
-                          fontSize: 11,
+                        style: AppTypography.caption.copyWith(
                           fontWeight: FontWeight.bold,
                           color: AppColors.primary,
                           letterSpacing: 1.0,
@@ -316,18 +350,22 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                       ),
                       GestureDetector(
                         onTap: _showAddFolderDialog,
-                        child: const Icon(Icons.add, size: 18, color: AppColors.primary),
+                        child: const Icon(Icons.add_rounded, size: 18, color: AppColors.primary),
                       )
                     ],
                   ),
                 ),
                 // Custom folders list
                 if (settings.folders.isEmpty)
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.xs),
                     child: Text(
                       'No folders created yet',
-                      style: TextStyle(color: AppColors.textSecondary, fontSize: 12, fontStyle: FontStyle.italic),
+                      style: AppTypography.bodyMedium.copyWith(
+                        color: AppColors.textSecondary,
+                        fontStyle: FontStyle.italic,
+                        fontSize: 12,
+                      ),
                     ),
                   )
                 else
@@ -359,22 +397,21 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     required VoidCallback onTap,
   }) {
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 2.0),
+      margin: const EdgeInsets.symmetric(vertical: 2.0, horizontal: AppSpacing.xxs),
       decoration: BoxDecoration(
-        color: isSelected ? AppColors.primary.withOpacity(0.15) : Colors.transparent,
-        borderRadius: BorderRadius.circular(12),
+        color: isSelected ? AppColors.primary.withOpacity(0.12) : Colors.transparent,
+        borderRadius: BorderRadius.circular(14),
       ),
       child: ListTile(
         leading: Icon(icon, color: isSelected ? AppColors.primary : AppColors.textSecondary),
         title: Text(
           title,
-          style: TextStyle(
-            color: isSelected ? AppColors.textPrimary : AppColors.textPrimary.withOpacity(0.8),
-            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-            fontSize: 14.5,
+          style: AppTypography.bodySemibold.copyWith(
+            color: isSelected ? AppColors.textPrimary : AppColors.textPrimary.withOpacity(0.85),
+            fontSize: 14,
           ),
         ),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         onTap: onTap,
       ),
     );
@@ -387,29 +424,28 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     required VoidCallback onDelete,
   }) {
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 2.0),
+      margin: const EdgeInsets.symmetric(vertical: 2.0, horizontal: AppSpacing.xxs),
       decoration: BoxDecoration(
-        color: isSelected ? AppColors.primary.withOpacity(0.15) : Colors.transparent,
-        borderRadius: BorderRadius.circular(12),
+        color: isSelected ? AppColors.primary.withOpacity(0.12) : Colors.transparent,
+        borderRadius: BorderRadius.circular(14),
       ),
       child: ListTile(
         leading: Icon(
-          isSelected ? Icons.folder : Icons.folder_open_outlined,
+          isSelected ? Icons.folder_rounded : Icons.folder_open_rounded,
           color: isSelected ? AppColors.primary : AppColors.textSecondary,
         ),
         title: Text(
           folderName,
-          style: TextStyle(
-            color: isSelected ? AppColors.textPrimary : AppColors.textPrimary.withOpacity(0.8),
-            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-            fontSize: 14.5,
+          style: AppTypography.bodySemibold.copyWith(
+            color: isSelected ? AppColors.textPrimary : AppColors.textPrimary.withOpacity(0.85),
+            fontSize: 14,
           ),
         ),
         trailing: IconButton(
-          icon: const Icon(Icons.delete_outline, size: 16, color: Colors.redAccent),
+          icon: const Icon(Icons.delete_outline_rounded, size: 16, color: Colors.redAccent),
           onPressed: onDelete,
         ),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         onTap: onTap,
       ),
     );
@@ -421,21 +457,22 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFF1E1E2C),
-        title: const Text('New Folder', style: TextStyle(color: Colors.white)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text('New Folder', style: AppTypography.headingLarge),
         content: TextField(
           controller: folderController,
           autofocus: true,
-          style: const TextStyle(color: Colors.white),
-          decoration: const InputDecoration(
+          style: AppTypography.bodyLarge,
+          decoration: InputDecoration(
             hintText: 'Enter folder name...',
-            hintStyle: TextStyle(color: Colors.white38),
-            focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: AppColors.primary)),
+            hintStyle: AppTypography.bodyMedium.copyWith(color: Colors.white38),
+            focusedBorder: const UnderlineInputBorder(borderSide: BorderSide(color: AppColors.primary)),
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+            child: Text('Cancel', style: AppTypography.bodySemibold.copyWith(color: Colors.grey)),
           ),
           TextButton(
             onPressed: () async {
@@ -447,7 +484,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 }
               }
             },
-            child: const Text('Create', style: TextStyle(color: AppColors.primary)),
+            child: Text('Create', style: AppTypography.bodySemibold.copyWith(color: AppColors.primary)),
           ),
         ],
       ),
@@ -459,21 +496,20 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFF1E1E2C),
-        title: Text('Delete folder "$folderName"?', style: const TextStyle(color: Colors.white)),
-        content: const Text(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text('Delete folder "$folderName"?', style: AppTypography.headingLarge),
+        content: Text(
           'Any notes tagged with this folder will not be deleted, but will become uncategorized.',
-          style: TextStyle(color: Colors.white70),
+          style: AppTypography.bodyMedium,
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+            child: Text('Cancel', style: AppTypography.bodySemibold.copyWith(color: Colors.grey)),
           ),
           TextButton(
             onPressed: () async {
-              // Remove folder from notes first
               await ref.read(notesProvider.notifier).removeFolderFromNotes(folderName);
-              // Delete folder setting
               await ref.read(settingsProvider.notifier).removeFolder(folderName);
               
               if (_selectedCategory == 'folder:$folderName') {
@@ -485,7 +521,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 Navigator.pop(context);
               }
             },
-            child: const Text('Delete', style: TextStyle(color: Colors.redAccent)),
+            child: Text('Delete', style: AppTypography.bodySemibold.copyWith(color: Colors.redAccent)),
           ),
         ],
       ),
@@ -494,30 +530,53 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 
   Widget _buildEmptyState() {
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.notes, size: 64, color: AppColors.textSecondary.withOpacity(0.3)),
-          const SizedBox(height: 12),
-          Text(
-            _selectedCategory == 'all' 
-                ? 'No floating notes created yet' 
-                : 'No notes in this folder',
-            style: const TextStyle(color: AppColors.textSecondary),
-          ),
-          const SizedBox(height: 16),
-          ElevatedButton.icon(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.xxl),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(AppSpacing.lg),
+              decoration: BoxDecoration(
+                color: AppColors.cardBg,
+                shape: BoxShape.circle,
+                border: Border.all(color: AppColors.border, width: 1.5),
+              ),
+              child: Icon(Icons.notes_rounded, size: 48, color: AppColors.textSecondary.withOpacity(0.3)),
             ),
-            onPressed: () => _showNoteEditorSheet(context),
-            icon: const Icon(Icons.add, size: 18),
-            label: const Text('Create Note'),
-          ),
-        ],
-      ).animate().fadeIn(duration: 500.ms).scale(begin: const Offset(0.95, 0.95)),
-    );
+            AppSpacing.h16,
+            Text(
+              _selectedCategory == 'all' 
+                  ? 'No floating notes created yet' 
+                  : 'No notes in this folder',
+              style: AppTypography.headingMedium.copyWith(color: AppColors.textSecondary),
+            ),
+            AppSpacing.h24,
+            PressableScale(
+              onTap: () => _showNoteEditorSheet(context),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl, vertical: AppSpacing.sm),
+                decoration: BoxDecoration(
+                  color: AppColors.primary,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.add_rounded, size: 18, color: Colors.white),
+                    AppSpacing.w8,
+                    Text(
+                      'Create Note',
+                      style: AppTypography.bodySemibold.copyWith(color: Colors.white),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    ).animate().fadeIn(duration: AppMotion.page).scale(begin: const Offset(0.95, 0.95), curve: AppMotion.curvePage);
   }
 
   Widget _buildPinterestGrid(List<Note> notes) {
@@ -537,19 +596,51 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       children: [
         Expanded(
           child: Column(
-            children: leftColumnNotes.map((note) => Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: _buildNoteCard(note),
-            )).toList(),
+            children: leftColumnNotes.asMap().entries.map((entry) {
+              final index = entry.key;
+              final note = entry.value;
+              return Padding(
+                padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                child: PressableScale(
+                  onTap: () => _showNoteEditorSheet(context, note: note),
+                  child: PremiumNoteCard(
+                    note: note,
+                    onTap: () => _showNoteEditorSheet(context, note: note),
+                    onOpenOverlay: () {
+                      ref.read(notesProvider.notifier).toggleOverlay(note);
+                    },
+                  ),
+                ),
+              )
+              .animate()
+              .fadeIn(delay: (index * 50).ms, duration: AppMotion.page)
+              .slideY(begin: 0.1, end: 0, curve: AppMotion.curvePage);
+            }).toList(),
           ),
         ),
-        const SizedBox(width: 12),
+        const SizedBox(width: AppSpacing.sm),
         Expanded(
           child: Column(
-            children: rightColumnNotes.map((note) => Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: _buildNoteCard(note),
-            )).toList(),
+            children: rightColumnNotes.asMap().entries.map((entry) {
+              final index = entry.key;
+              final note = entry.value;
+              return Padding(
+                padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                child: PressableScale(
+                  onTap: () => _showNoteEditorSheet(context, note: note),
+                  child: PremiumNoteCard(
+                    note: note,
+                    onTap: () => _showNoteEditorSheet(context, note: note),
+                    onOpenOverlay: () {
+                      ref.read(notesProvider.notifier).toggleOverlay(note);
+                    },
+                  ),
+                ),
+              )
+              .animate()
+              .fadeIn(delay: (index * 50 + 25).ms, duration: AppMotion.page)
+              .slideY(begin: 0.1, end: 0, curve: AppMotion.curvePage);
+            }).toList(),
           ),
         ),
       ],
@@ -558,102 +649,27 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 
   Widget _buildListView(List<Note> notes) {
     return Column(
-      children: notes.map((note) => Padding(
-        padding: const EdgeInsets.only(bottom: 12),
-        child: _buildNoteCard(note),
-      )).toList(),
-    );
-  }
-
-  Widget _buildNoteCard(Note note) {
-    final cardColor = AppColors.getStickyColor(note.color);
-    final textColor = AppColors.getStickyTextColor(note.color);
-
-    int checkedCount = note.checklistItems.where((i) => i.checked).length;
-    int totalCount = note.checklistItems.length;
-
-    return Material(
-      color: Colors.transparent,
-      child: Container(
-        decoration: BoxDecoration(
-          color: cardColor,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: cardColor.withOpacity(0.3),
-              blurRadius: 16,
-              spreadRadius: -4,
-              offset: const Offset(0, 8),
-            )
-          ],
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(16),
-          child: InkWell(
+      children: notes.asMap().entries.map((entry) {
+        final index = entry.key;
+        final note = entry.value;
+        return Padding(
+          padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+          child: PressableScale(
             onTap: () => _showNoteEditorSheet(context, note: note),
-            splashColor: textColor.withOpacity(0.12),
-            highlightColor: textColor.withOpacity(0.06),
-            child: Padding(
-              padding: const EdgeInsets.all(14),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Row(
-                    children: [
-                      Text(note.icon, style: const TextStyle(fontSize: 16)),
-                      const SizedBox(width: 6),
-                      Expanded(
-                        child: Text(
-                          note.title.isNotEmpty ? note.title : 'Untitled',
-                          style: TextStyle(
-                            fontSize: 13.5,
-                            fontWeight: FontWeight.bold,
-                            color: textColor,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          onTap: () {
-                            ref.read(notesProvider.notifier).toggleOverlay(note);
-                          },
-                          borderRadius: BorderRadius.circular(12),
-                          splashColor: textColor.withOpacity(0.15),
-                          child: Padding(
-                            padding: const EdgeInsets.all(4.0),
-                            child: Icon(
-                              Icons.open_in_new,
-                              size: 14,
-                              color: textColor.withOpacity(0.8),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const Divider(height: 10, thickness: 0.5, color: Colors.black12),
-                  Text(
-                    note.content.isNotEmpty ? note.content : 'No content',
-                    maxLines: 8,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 12.5,
-                      color: textColor.withOpacity(0.85),
-                      height: 1.4,
-                    ),
-                  ),
-                ],
-              ),
+            child: PremiumNoteCard(
+              note: note,
+              onTap: () => _showNoteEditorSheet(context, note: note),
+              onOpenOverlay: () {
+                ref.read(notesProvider.notifier).toggleOverlay(note);
+              },
             ),
           ),
-        ),
-      ),
-    ).animate().fadeIn(duration: 400.ms, curve: Curves.easeOutQuad).slideY(begin: 0.05, end: 0);
+        )
+        .animate()
+        .fadeIn(delay: (index * 50).ms, duration: AppMotion.page)
+        .slideY(begin: 0.05, end: 0, curve: AppMotion.curvePage);
+      }).toList(),
+    );
   }
 
   void _showNoteEditorSheet(BuildContext context, {Note? note}) {

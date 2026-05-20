@@ -324,6 +324,19 @@ class OverlayService : Service() {
             map["bubbleSize"] = note.bubbleSize
             map["bubbleShape"] = note.bubbleShape
             
+            // Serialize checklist items so Flutter can parse them
+            val checklistList = ArrayList<Map<String, Any>>()
+            for (item in note.checklist) {
+                val itemMap = HashMap<String, Any>()
+                itemMap["id"] = item.id
+                itemMap["noteId"] = item.noteId
+                itemMap["text"] = item.text
+                itemMap["checked"] = if (item.checked) 1 else 0
+                itemMap["indent"] = item.indent
+                checklistList.add(itemMap)
+            }
+            map["checklist"] = checklistList
+            
             methodChannel?.invokeMethod("onNoteUpdated", map)
         }
     }

@@ -21,9 +21,15 @@ class OverlayChannel {
           final Map<String, dynamic> arguments = Map<String, dynamic>.from(call.arguments);
           final noteId = arguments['id'] as String;
 
-          // Retrieve current checklist items from DB to preserve them, or Kotlin might pass checklist updates
+          // Retrieve checklist items from native argument if provided, otherwise fallback to database
           final existingNote = await DatabaseService.instance.getNoteById(noteId);
-          final items = existingNote?.checklistItems ?? [];
+          List<ChecklistItem> items = [];
+          if (arguments.containsKey('checklist') && arguments['checklist'] != null) {
+            final rawChecklist = List<dynamic>.from(arguments['checklist']);
+            items = rawChecklist.map((item) => ChecklistItem.fromMap(Map<String, dynamic>.from(item))).toList();
+          } else {
+            items = existingNote?.checklistItems ?? [];
+          }
 
           // Preserve the original database timestamps when syncing from native Kotlin
           if (existingNote != null) {
