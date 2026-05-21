@@ -324,9 +324,10 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen> {
 
     showModalBottomSheet(
       context: context,
-      backgroundColor: const Color(0xFF161622),
+      backgroundColor: AppColors.background,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        side: BorderSide(color: Colors.black, width: 2.5),
       ),
       builder: (context) {
         return StatefulBuilder(
@@ -343,7 +344,7 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen> {
                       height: 4,
                       margin: const EdgeInsets.only(bottom: 16),
                       decoration: BoxDecoration(
-                        color: Colors.white24,
+                        color: Colors.black26,
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),
@@ -353,11 +354,14 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen> {
                     children: [
                       Row(
                         children: [
-                          const Icon(Icons.info_outline, color: AppColors.primary, size: 22),
+                          const Icon(Icons.info_outline, color: Colors.black, size: 22),
                           AppSpacing.w8,
                           Text(
                             'Note Information',
-                            style: AppTypography.headingLarge.copyWith(color: Colors.white),
+                            style: AppTypography.headingLarge.copyWith(
+                              color: Colors.black,
+                              fontWeight: FontWeight.w900,
+                            ),
                           ),
                         ],
                       ),
@@ -366,15 +370,16 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen> {
                         child: Container(
                           padding: const EdgeInsets.all(4),
                           decoration: BoxDecoration(
-                            color: Colors.white10,
+                            color: Colors.black.withOpacity(0.05),
                             borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: Colors.black, width: 1.5),
                           ),
-                          child: const Icon(Icons.close, color: Colors.white70, size: 18),
+                          child: const Icon(Icons.close, color: Colors.black87, size: 18),
                         ),
                       )
                     ],
                   ),
-                  const Divider(color: Colors.white10, height: 24),
+                  const Divider(color: Colors.black26, height: 24, thickness: 1.5),
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
@@ -382,13 +387,13 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen> {
                         width: 110,
                         child: Text(
                           'Created',
-                          style: AppTypography.bodyMedium.copyWith(color: Colors.white54, fontWeight: FontWeight.w500),
+                          style: AppTypography.bodyMedium.copyWith(color: Colors.black54, fontWeight: FontWeight.w700),
                         ),
                       ),
                       Expanded(
                         child: Text(
                           _formatTimestamp(_createdAt, verbose: true),
-                          style: AppTypography.bodySemibold.copyWith(color: Colors.white),
+                          style: AppTypography.bodySemibold.copyWith(color: Colors.black, fontWeight: FontWeight.w800),
                         ),
                       ),
                       IconButton(
@@ -431,13 +436,13 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen> {
           width: 110,
           child: Text(
             label,
-            style: AppTypography.bodyMedium.copyWith(color: Colors.white54, fontWeight: FontWeight.w500),
+            style: AppTypography.bodyMedium.copyWith(color: Colors.black54, fontWeight: FontWeight.w700),
           ),
         ),
         Expanded(
           child: Text(
             value,
-            style: AppTypography.bodySemibold.copyWith(color: Colors.white),
+            style: AppTypography.bodySemibold.copyWith(color: Colors.black, fontWeight: FontWeight.w800),
           ),
         ),
       ],
@@ -494,20 +499,89 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen> {
               onPressed: () async {
                 final confirm = await showDialog<bool>(
                   context: context,
-                  builder: (context) => AlertDialog(
-                    backgroundColor: const Color(0xFF1E1E2C),
-                    title: Text('Delete Note', style: AppTypography.headingLarge),
-                    content: Text('Are you sure you want to delete this note?', style: AppTypography.bodyMedium),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(context, false),
-                        child: Text('Cancel', style: AppTypography.bodySemibold.copyWith(color: Colors.grey)),
+                  builder: (context) => Dialog(
+                    backgroundColor: Colors.transparent,
+                    elevation: 0,
+                    child: Container(
+                      padding: const EdgeInsets.all(AppSpacing.lg),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.black, width: 2.5),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Colors.black,
+                            offset: Offset(4, 4),
+                            blurRadius: 0,
+                          ),
+                        ],
                       ),
-                      TextButton(
-                        onPressed: () => Navigator.pop(context, true),
-                        child: Text('Delete', style: AppTypography.bodySemibold.copyWith(color: Colors.redAccent)),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Text(
+                            'Delete Note',
+                            style: AppTypography.headingLarge.copyWith(
+                              fontWeight: FontWeight.w900,
+                              color: Colors.black,
+                            ),
+                          ),
+                          AppSpacing.h12,
+                          Text(
+                            'Are you sure you want to delete this note? This action cannot be undone.',
+                            style: AppTypography.bodyMedium.copyWith(color: Colors.black87, height: 1.4),
+                          ),
+                          AppSpacing.h20,
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              PressableScale(
+                                onTap: () => Navigator.pop(context, false),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(color: Colors.black, width: 2.0),
+                                  ),
+                                  child: Text(
+                                    'Cancel',
+                                    style: AppTypography.bodySemibold.copyWith(color: Colors.black),
+                                  ),
+                                ),
+                              ),
+                              AppSpacing.w12,
+                              PressableScale(
+                                onTap: () => Navigator.pop(context, true),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                  decoration: BoxDecoration(
+                                    color: Colors.redAccent,
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(color: Colors.black, width: 2.0),
+                                    boxShadow: const [
+                                      BoxShadow(
+                                        color: Colors.black,
+                                        offset: Offset(2, 2),
+                                        blurRadius: 0,
+                                      ),
+                                    ],
+                                  ),
+                                  child: Text(
+                                    'Delete',
+                                    style: AppTypography.bodySemibold.copyWith(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
                 );
                 if (confirm == true && mounted) {
@@ -531,8 +605,15 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen> {
               padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs, vertical: 6),
               decoration: BoxDecoration(
                 color: AppColors.cardBg,
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: AppColors.border, width: 1.5),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.black, width: 2.5),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Colors.black,
+                    offset: Offset(3, 3),
+                    blurRadius: 0,
+                  ),
+                ],
               ),
               child: SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
@@ -610,14 +691,13 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen> {
                 margin: const EdgeInsets.all(AppSpacing.md),
                 decoration: BoxDecoration(
                   color: cardColor,
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: cardBorder, width: 1.5),
-                  boxShadow: [
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.black, width: 2.5),
+                  boxShadow: const [
                     BoxShadow(
-                      color: AppColors.getGlowColor(_selectedColor),
-                      blurRadius: 24,
-                      spreadRadius: -8,
-                      offset: const Offset(0, 12),
+                      color: Colors.black,
+                      offset: Offset(4, 4),
+                      blurRadius: 0,
                     ),
                   ],
                 ),
@@ -680,12 +760,15 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen> {
                             avatar: Icon(Icons.folder_open_rounded, size: 14, color: noteTextColor),
                             label: Text(
                               _selectedFolder,
-                              style: AppTypography.captionSemibold.copyWith(color: noteTextColor),
+                              style: AppTypography.captionSemibold.copyWith(
+                                color: noteTextColor,
+                                fontWeight: FontWeight.w800,
+                              ),
                             ),
-                            backgroundColor: noteTextColor.withOpacity(0.08),
-                            side: BorderSide(color: noteTextColor.withOpacity(0.15)),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                            deleteIcon: Icon(Icons.close_rounded, size: 14, color: noteTextColor.withOpacity(0.6)),
+                            backgroundColor: Colors.white,
+                            side: const BorderSide(color: Colors.black, width: 1.5),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            deleteIcon: Icon(Icons.close_rounded, size: 14, color: noteTextColor),
                             onDeleted: () {
                               setState(() {
                                 _selectedFolder = '';
@@ -713,9 +796,10 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen> {
                                     // Checkbox
                                     Checkbox(
                                       value: item.checked,
-                                      activeColor: noteTextColor,
-                                      checkColor: cardColor,
-                                      side: BorderSide(color: noteTextColor.withOpacity(0.4), width: 1.2),
+                                      activeColor: Colors.black,
+                                      checkColor: Colors.white,
+                                      side: BorderSide(color: noteTextColor, width: 2.0),
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
                                       onChanged: (val) {
                                         setState(() {
                                           _checklistItems[index] = item.copyWith(checked: val ?? false);
@@ -779,7 +863,11 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen> {
                             icon: Icon(Icons.add_rounded, color: noteTextColor, size: 20),
                             label: Text(
                               'Add item',
-                              style: AppTypography.bodySemibold.copyWith(color: noteTextColor),
+                              style: AppTypography.bodySemibold.copyWith(
+                                color: noteTextColor,
+                                fontWeight: FontWeight.w800,
+                                decoration: TextDecoration.underline,
+                              ),
                             ),
                           ),
                         ] else ...[
@@ -832,19 +920,33 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen> {
   }) {
     return PressableScale(
       onTap: onTap,
-      child: Container(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary.withOpacity(0.15) : Colors.transparent,
-          borderRadius: BorderRadius.circular(14),
+          color: isSelected ? AppColors.primary : Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color: isSelected ? AppColors.primary.withOpacity(0.3) : Colors.transparent,
-            width: 1,
+            color: isSelected ? Colors.black : Colors.transparent,
+            width: 2.0,
           ),
+          boxShadow: isSelected
+              ? const [
+                  BoxShadow(
+                    color: Colors.black,
+                    offset: Offset(2, 2),
+                    blurRadius: 0,
+                  ),
+                ]
+              : null,
         ),
         child: icon != null
             ? Text(icon, style: const TextStyle(fontSize: 18))
-            : Icon(iconData, color: isSelected ? AppColors.primary : textColor.withOpacity(0.8), size: 20),
+            : Icon(
+                iconData,
+                color: isSelected ? Colors.black : Colors.black87,
+                size: 20,
+              ),
       ),
     );
   }
@@ -853,9 +955,9 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen> {
     return Container(
       height: 320,
       decoration: const BoxDecoration(
-        color: Color(0xFF161622),
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        border: Border(top: BorderSide(color: AppColors.border, width: 1.5)),
+        color: AppColors.background,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        border: Border(top: BorderSide(color: Colors.black, width: 2.5)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -867,23 +969,24 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen> {
               children: [
                 Text(
                   'Select representative bubble icon',
-                  style: AppTypography.bodySemibold.copyWith(color: Colors.white),
+                  style: AppTypography.bodySemibold.copyWith(color: Colors.black, fontWeight: FontWeight.w800),
                 ),
                 GestureDetector(
                   onTap: () => setState(() => _showIconPicker = false),
                   child: Container(
                     padding: const EdgeInsets.all(4),
                     decoration: BoxDecoration(
-                      color: Colors.white10,
+                      color: Colors.black.withOpacity(0.05),
                       borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: Colors.black, width: 1.5),
                     ),
-                    child: const Icon(Icons.close, color: Colors.white70, size: 20),
+                    child: const Icon(Icons.close, color: Colors.black, size: 20),
                   ),
                 )
               ],
             ),
           ),
-          const Divider(height: 1, color: Colors.white10),
+          const Divider(height: 1, color: Colors.black26),
           Expanded(
             child: GridView.builder(
               padding: const EdgeInsets.all(16),
@@ -905,12 +1008,21 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen> {
                   },
                   child: Container(
                     decoration: BoxDecoration(
-                      color: isSelected ? Colors.white10 : Colors.transparent,
+                      color: isSelected ? AppColors.primary : Colors.transparent,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: isSelected ? AppColors.primary : Colors.transparent,
-                        width: 1.5,
+                        color: isSelected ? Colors.black : Colors.transparent,
+                        width: 2.0,
                       ),
+                      boxShadow: isSelected
+                          ? const [
+                              BoxShadow(
+                                color: Colors.black,
+                                offset: Offset(2, 2),
+                                blurRadius: 0,
+                              ),
+                            ]
+                          : null,
                     ),
                     alignment: Alignment.center,
                     child: Text(emoji, style: const TextStyle(fontSize: 22)),
@@ -928,9 +1040,9 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen> {
     return Container(
       height: 320,
       decoration: const BoxDecoration(
-        color: Color(0xFF161622),
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        border: Border(top: BorderSide(color: AppColors.border, width: 1.5)),
+        color: AppColors.background,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        border: Border(top: BorderSide(color: Colors.black, width: 2.5)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -942,23 +1054,24 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen> {
               children: [
                 Text(
                   'Color Theme Palette',
-                  style: AppTypography.headingMedium.copyWith(color: Colors.white),
+                  style: AppTypography.headingMedium.copyWith(color: Colors.black, fontWeight: FontWeight.w900),
                 ),
                 GestureDetector(
                   onTap: () => setState(() => _showColorPicker = false),
                   child: Container(
                     padding: const EdgeInsets.all(4),
                     decoration: BoxDecoration(
-                      color: Colors.white10,
+                      color: Colors.black.withOpacity(0.05),
                       borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: Colors.black, width: 1.5),
                     ),
-                    child: const Icon(Icons.close, color: Colors.white70, size: 20),
+                    child: const Icon(Icons.close, color: Colors.black, size: 20),
                   ),
                 )
               ],
             ),
           ),
-          const Divider(height: 1, color: Colors.white10),
+          const Divider(height: 1, color: Colors.black26),
           Expanded(
             child: GridView.builder(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
@@ -984,15 +1097,13 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen> {
                     decoration: BoxDecoration(
                       color: colorVal,
                       shape: BoxShape.circle,
-                      border: isSelected
-                          ? Border.all(color: Colors.white, width: 3)
-                          : Border.all(color: Colors.white.withOpacity(0.2), width: 1.5),
+                      border: Border.all(color: Colors.black, width: isSelected ? 3.5 : 2.0),
                       boxShadow: isSelected
-                          ? [
+                          ? const [
                               BoxShadow(
-                                color: colorVal.withOpacity(0.4),
-                                blurRadius: 10,
-                                spreadRadius: 1,
+                                color: Colors.black,
+                                offset: Offset(2, 2),
+                                blurRadius: 0,
                               )
                             ]
                           : null,
@@ -1019,10 +1130,11 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen> {
     final settings = ref.read(settingsProvider);
     showModalBottomSheet(
       context: context,
-      backgroundColor: const Color(0xFF161622),
+      backgroundColor: AppColors.background,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        side: BorderSide(color: Colors.black, width: 2.5),
       ),
       builder: (context) {
         return StatefulBuilder(
@@ -1046,15 +1158,15 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen> {
                     children: [
                       Text(
                         'Organize into Folder',
-                        style: AppTypography.headingLarge.copyWith(color: Colors.white),
+                        style: AppTypography.headingLarge.copyWith(color: Colors.black, fontWeight: FontWeight.w900),
                       ),
                       IconButton(
-                        icon: const Icon(Icons.close, color: Colors.white70),
+                        icon: const Icon(Icons.close, color: Colors.black),
                         onPressed: () => Navigator.pop(context),
                       )
                     ],
                   ),
-                  const Divider(color: Colors.white10),
+                  const Divider(color: Colors.black26),
                   // List of folders
                   Flexible(
                     child: ListView.builder(
@@ -1063,49 +1175,91 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen> {
                       itemBuilder: (context, index) {
                         if (index == 0) {
                           final isSelected = _selectedFolder.isEmpty;
-                          return ListTile(
-                            leading: Icon(
-                              isSelected ? Icons.folder_rounded : Icons.folder_open_rounded,
-                              color: isSelected ? AppColors.primary : Colors.white70,
-                            ),
-                            title: Text(
-                              'No Folder (Uncategorized)',
-                              style: AppTypography.bodySemibold.copyWith(
-                                color: isSelected ? AppColors.primary : Colors.white,
+                          return Container(
+                            margin: const EdgeInsets.symmetric(vertical: 4),
+                            decoration: BoxDecoration(
+                              color: isSelected ? AppColors.primary : Colors.transparent,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: isSelected ? Colors.black : Colors.transparent,
+                                width: 2.0,
                               ),
+                              boxShadow: isSelected
+                                  ? const [
+                                      BoxShadow(
+                                        color: Colors.black,
+                                        offset: Offset(2, 2),
+                                        blurRadius: 0,
+                                      ),
+                                    ]
+                                  : null,
                             ),
-                            onTap: () {
-                              setState(() {
-                                _selectedFolder = '';
-                              });
-                              Navigator.pop(context);
-                            },
+                            child: ListTile(
+                              leading: Icon(
+                                isSelected ? Icons.folder_rounded : Icons.folder_open_rounded,
+                                color: Colors.black,
+                              ),
+                              title: Text(
+                                'No Folder (Uncategorized)',
+                                style: AppTypography.bodySemibold.copyWith(
+                                  color: Colors.black,
+                                  fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                                ),
+                              ),
+                              onTap: () {
+                                setState(() {
+                                  _selectedFolder = '';
+                                });
+                                Navigator.pop(context);
+                              },
+                            ),
                           );
                         }
                         final folderName = folders[index - 1];
                         final isSelected = _selectedFolder == folderName;
-                        return ListTile(
-                          leading: Icon(
-                            isSelected ? Icons.folder_rounded : Icons.folder_open_rounded,
-                            color: isSelected ? AppColors.primary : Colors.white70,
-                          ),
-                          title: Text(
-                            folderName,
-                            style: AppTypography.bodySemibold.copyWith(
-                              color: isSelected ? AppColors.primary : Colors.white,
+                        return Container(
+                          margin: const EdgeInsets.symmetric(vertical: 4),
+                          decoration: BoxDecoration(
+                            color: isSelected ? AppColors.primary : Colors.transparent,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: isSelected ? Colors.black : Colors.transparent,
+                              width: 2.0,
                             ),
+                            boxShadow: isSelected
+                                ? const [
+                                    BoxShadow(
+                                      color: Colors.black,
+                                      offset: Offset(2, 2),
+                                      blurRadius: 0,
+                                    ),
+                                  ]
+                                : null,
                           ),
-                          onTap: () {
-                            setState(() {
-                              _selectedFolder = folderName;
-                            });
-                            Navigator.pop(context);
-                          },
+                          child: ListTile(
+                            leading: Icon(
+                              isSelected ? Icons.folder_rounded : Icons.folder_open_rounded,
+                              color: Colors.black,
+                            ),
+                            title: Text(
+                              folderName,
+                              style: AppTypography.bodySemibold.copyWith(
+                                color: Colors.black,
+                                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                              ),
+                            ),
+                            onTap: () {
+                              setState(() {
+                                _selectedFolder = folderName;
+                              });
+                              Navigator.pop(context);
+                            },
+                          ),
                         );
                       },
                     ),
                   ),
-                  const Divider(color: Colors.white10),
+                  const Divider(color: Colors.black26),
                   // Create new folder row
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -1114,17 +1268,31 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen> {
                         Expanded(
                           child: TextField(
                             controller: newFolderController,
-                            style: AppTypography.bodyLarge.copyWith(color: Colors.white),
+                            style: AppTypography.bodyLarge.copyWith(color: Colors.black),
                             decoration: InputDecoration(
                               hintText: 'Create new folder...',
-                              hintStyle: AppTypography.bodyMedium.copyWith(color: Colors.white38),
-                              border: InputBorder.none,
+                              hintStyle: AppTypography.bodyMedium.copyWith(color: Colors.black54),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: const BorderSide(color: Colors.black, width: 2.0),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: const BorderSide(color: Colors.black, width: 2.0),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: const BorderSide(color: AppColors.primary, width: 2.0),
+                              ),
+                              filled: true,
+                              fillColor: Colors.white,
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                             ),
                           ),
                         ),
-                        IconButton(
-                          icon: const Icon(Icons.add_circle, color: AppColors.primary),
-                          onPressed: () async {
+                        AppSpacing.w8,
+                        PressableScale(
+                          onTap: () async {
                             final name = newFolderController.text.trim();
                             if (name.isNotEmpty) {
                               await ref.read(settingsProvider.notifier).addFolder(name);
@@ -1138,6 +1306,22 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen> {
                               }
                             }
                           },
+                          child: Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: AppColors.accent,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: Colors.black, width: 2.0),
+                              boxShadow: const [
+                                BoxShadow(
+                                  color: Colors.black,
+                                  offset: Offset(2, 2),
+                                  blurRadius: 0,
+                                ),
+                              ],
+                            ),
+                            child: const Icon(Icons.add_rounded, color: Colors.black, size: 20),
+                          ),
                         ),
                       ],
                     ),

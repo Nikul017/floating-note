@@ -1,46 +1,46 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
-  // Main app dashboard theme (Premium Slate-Emerald Theme)
-  static const Color background = Color(0xFF0B0F19);
-  static const Color cardBg = Color(0xFF131926);
-  static const Color cardBgGlass = Color(0xCC131926);
-  static const Color primary = Color(0xFF10B981); // Vibrant Emerald
-  static const Color accent = Color(0xFF34D399);  // Mint/Seafoam Accent
-  static const Color textPrimary = Color(0xFFF8FAFC);
-  static const Color textSecondary = Color(0xFF94A3B8);
-  static const Color border = Color(0xFF222B3E);
+  // Main app dashboard theme (Neo-brutalist high-contrast theme)
+  static const Color background = Color(0xFFFFFDF5); // Warm Retro Cream
+  static const Color cardBg = Color(0xFFFFFFFF);     // Solid White
+  static const Color cardBgGlass = Color(0xCCFFFFFF); // White glass
+  static const Color primary = Color(0xFF9DFF38);    // Bold Lime Green
+  static const Color accent = Color(0xFF00FFCC);     // Vibrant Neo Cyan
+  static const Color textPrimary = Color(0xFF000000); // Solid Black
+  static const Color textSecondary = Color(0xFF333333); // Dark Charcoal
+  static const Color border = Color(0xFF000000);     // Solid Black Border
 
-  // Curated premium pastel sticky note colors (Hex strings mapped to Flutter Colors)
+  // Curated premium Neo-brutalist sticky note colors (highly saturated pop colors)
   static const Map<String, Color> stickyNoteColors = {
-    'yellow': Color(0xFFFFF59D),     // Soft warm yellow
-    'pink': Color(0xFFF8BBD0),       // Gentle pink
-    'mint': Color(0xFFC8E6C9),       // Soothing mint green
-    'blue': Color(0xFFB3E5FC),       // Sky blue
-    'lavender': Color(0xFFE1BEE7),   // Lavender
-    'orange': Color(0xFFFFCC80),     // Soft orange
-    'rose': Color(0xFFFFCDD2),       // Soft rose
-    'purple': Color(0xFFD1C4E9),     // Soothing purple
-    'teal': Color(0xFFB2DFDB),       // Pastel teal
-    'green': Color(0xFFDCEDC8),      // Soft green
-    'lime': Color(0xFFF0F4C3),       // Pastel lime
-    'cream': Color(0xFFFFF9C4),      // Soft cream
-    'amber': Color(0xFFFFE082),      // Sunset amber
-    'coral': Color(0xFFFFAB91),      // Pastel coral
-    'clay': Color(0xFFBCAAA4),       // Pastel clay
-    'grey': Color(0xFFCFD8DC),       // Cool slate grey
-    'cotton': Color(0xFFF3E5F5),     // Cotton candy
-    'sky': Color(0xFFE0F7FA),        // Ice sky
-    'emerald': Color(0xFFE8F5E9),    // Pale emerald
-    'pistachio': Color(0xFFF1F8E9),  // Pistachio
-    'sand': Color(0xFFFFF8E1),       // Desert sand
-    'plum': Color(0xFFFCE4EC),       // Plum blossom
-    'cocoa': Color(0xFFEFEBE9),      // Warm cocoa
-    'charcoal': Color(0xFF263238),   // Dark charcoal
-    'indigo': Color(0xFF1A237E),     // Royal indigo
-    'maroon': Color(0xFF3E2723),     // Dark coffee
-    'dark_mint': Color(0xFF004D40),  // Dark teal
-    'glass': Color(0xCC1A1A24),      // Glassmorphic dark
+    'yellow': Color(0xFFFFE853),     // Vibrant Neo Yellow
+    'pink': Color(0xFFFF85C2),       // Vibrant Bubblegum Pink
+    'mint': Color(0xFF5EFFAD),       // Neon Mint
+    'blue': Color(0xFF6BE5FF),       // Neon Sky Blue
+    'lavender': Color(0xFFD69CFF),   // Neon Lavender
+    'orange': Color(0xFFFF9D42),     // Vibrant Neon Orange
+    'rose': Color(0xFFFF7A82),       // Vibrant Rose
+    'purple': Color(0xFFA58EFF),     // Saturated Purple
+    'teal': Color(0xFF42FFD2),       // Neon Teal
+    'green': Color(0xFF88FF5E),      // Neon Green
+    'lime': Color(0xFFD4FF5E),       // Neon Lime
+    'cream': Color(0xFFFFF8BD),      // Neon Cream
+    'amber': Color(0xFFFFCE3A),      // Saturated Amber
+    'coral': Color(0xFFFF7A5E),      // Vibrant Coral
+    'clay': Color(0xFFD9BBA9),       // Saturated Clay
+    'grey': Color(0xFFC5D1D6),       // Saturated Cool Slate Grey
+    'cotton': Color(0xFFFFC6FA),     // Cotton Candy Pink
+    'sky': Color(0xFFB5FAFF),        // Ice Neo Sky
+    'emerald': Color(0xFF8CFFB7),    // Neon Emerald
+    'pistachio': Color(0xFFD4FFA6),  // Neon Pistachio
+    'sand': Color(0xFFFFF2C2),       // Brutalist Sand
+    'plum': Color(0xFFFFC0DB),       // Neon Plum
+    'cocoa': Color(0xFFE5D5CD),      // Brutalist Cocoa
+    'charcoal': Color(0xFF2B2F3A),   // Deep Charcoal (White Text)
+    'indigo': Color(0xFF4856FF),     // Vibrant Indigo (White Text)
+    'maroon': Color(0xFFFF5252),     // Saturated Red (White Text)
+    'dark_mint': Color(0xFF00C292),  // Deep Teal (White Text)
+    'glass': Color(0xFFE2E8F0),      // Slate Grey
   };
 
   // Convert Hex string name to Color
@@ -51,35 +51,30 @@ class AppColors {
   // Get matching text color for a sticky note (so contrast is perfect!)
   static Color getStickyTextColor(String colorName) {
     final name = colorName.toLowerCase();
-    if (name == 'charcoal' || name == 'glass' || name == 'indigo' || name == 'maroon' || name == 'dark_mint') {
-      return const Color(0xFFECEFF1); // Light text for dark notes
+    if (name == 'charcoal' || name == 'indigo' || name == 'maroon' || name == 'dark_mint') {
+      return const Color(0xFFFFFFFF); // White text for dark notes
     }
-    return const Color(0xFF263238); // Dark text for pastel notes
+    return const Color(0xFF000000); // Black text for brutalist flat cards
   }
 
-  // Soft dark-theme card background tint mapped from sticky note color
+  // Soft tint mapped from sticky note color
   static Color getEditorBgTint(String colorName, {double opacity = 0.08}) {
     final baseColor = getStickyColor(colorName);
     final name = colorName.toLowerCase();
-    if (name == 'charcoal' || name == 'glass' || name == 'indigo' || name == 'maroon' || name == 'dark_mint') {
-      return baseColor.withOpacity(0.4); // Dark notes are already dark, give them higher opacity
+    if (name == 'charcoal' || name == 'indigo' || name == 'maroon' || name == 'dark_mint') {
+      return baseColor.withOpacity(0.4);
     }
     return baseColor.withOpacity(opacity);
   }
 
   // Get matching outline border color for cards and editors
   static Color getBorderColor(String colorName, {bool isDarkTheme = true}) {
-    final baseColor = getStickyColor(colorName);
-    final name = colorName.toLowerCase();
-    if (name == 'charcoal' || name == 'glass' || name == 'indigo' || name == 'maroon' || name == 'dark_mint') {
-      return border;
-    }
-    return baseColor.withOpacity(isDarkTheme ? 0.3 : 0.6);
+    return border; // Always return solid black borders for Neo-brutalism!
   }
 
-  // Soft ambient glow color
+  // Soft ambient glow color (or flat backing color)
   static Color getGlowColor(String colorName) {
-    return getStickyColor(colorName).withOpacity(0.18);
+    return Colors.black.withOpacity(0.15); // Flat black backing shadow simulation
   }
 
   // List of colors for selection in Flutter toolbar

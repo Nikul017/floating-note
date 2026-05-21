@@ -25,7 +25,7 @@ class FloatNoteXApp extends StatelessWidget {
     return MaterialApp(
       title: 'FloatNoteX',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.darkTheme,
+      theme: AppTheme.brutalistTheme,
       home: const DashboardScreen(),
     );
   }

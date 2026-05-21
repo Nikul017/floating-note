@@ -96,15 +96,35 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> with WidgetsBin
         elevation: 0,
         centerTitle: true,
         title: Text(
-          'Settings',
-          style: AppTypography.headingLarge.copyWith(
-            fontWeight: FontWeight.bold,
-            letterSpacing: -0.5,
+          'SETTINGS',
+          style: AppTypography.displayMedium.copyWith(
+            fontSize: 22,
           ),
         ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.textPrimary, size: 20),
-          onPressed: () => Navigator.pop(context),
+        leading: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: PressableScale(
+            onTap: () => Navigator.pop(context),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: AppColors.border, width: 2),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Colors.black,
+                    offset: Offset(2, 2),
+                    blurRadius: 0,
+                  ),
+                ],
+              ),
+              child: const Icon(
+                Icons.arrow_back_rounded,
+                color: AppColors.textPrimary,
+                size: 20,
+              ),
+            ),
+          ),
         ),
       ),
       body: SingleChildScrollView(
@@ -123,16 +143,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> with WidgetsBin
                       Container(
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
-                          color: AppColors.primary.withOpacity(0.08),
-                          borderRadius: BorderRadius.circular(12),
+                          color: AppColors.primary,
+                          borderRadius: BorderRadius.circular(8),
                           border: Border.all(
-                            color: AppColors.primary.withOpacity(0.15),
-                            width: 1,
+                            color: AppColors.border,
+                            width: 2,
                           ),
                         ),
                         child: const Icon(
                           Icons.display_settings_rounded,
-                          color: AppColors.primary,
+                          color: Colors.black,
                           size: 20,
                         ),
                       ),
@@ -152,7 +172,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> with WidgetsBin
                                   : 'Required to show floating notes over other apps',
                               style: AppTypography.caption.copyWith(
                                 color: _hasOverlayPermission
-                                    ? AppColors.primary
+                                    ? const Color(0xFF008A5E) // Accessible green
                                     : AppColors.textSecondary,
                               ),
                             ),
@@ -164,31 +184,28 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> with WidgetsBin
                         PressableScale(
                           onTap: _requestPermission,
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                             decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                colors: [AppColors.primary, AppColors.accent],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              ),
-                              borderRadius: BorderRadius.circular(20),
-                              boxShadow: [
+                              color: AppColors.primary,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: AppColors.border, width: 2),
+                              boxShadow: const [
                                 BoxShadow(
-                                  color: AppColors.primary.withOpacity(0.3),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 3),
+                                  color: Colors.black,
+                                  offset: Offset(3, 3),
+                                  blurRadius: 0,
                                 ),
                               ],
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(Icons.security_rounded, size: 14, color: Colors.white),
+                                const Icon(Icons.security_rounded, size: 14, color: Colors.black),
                                 AppSpacing.w8,
                                 Text(
-                                  'Grant',
+                                  'GRANT',
                                   style: AppTypography.captionSemibold.copyWith(
-                                    color: Colors.white,
+                                    color: Colors.black,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
@@ -198,36 +215,50 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> with WidgetsBin
                         )
                       else
                         Container(
-                          padding: const EdgeInsets.all(4),
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                           decoration: BoxDecoration(
-                            color: AppColors.primary.withOpacity(0.1),
-                            shape: BoxShape.circle,
+                            color: AppColors.stickyNoteColors['mint'],
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(color: AppColors.border, width: 2),
                           ),
-                          child: const Icon(
-                            Icons.check_circle_rounded,
-                            color: AppColors.primary,
-                            size: 22,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                Icons.check_circle_outline_rounded,
+                                color: Colors.black,
+                                size: 14,
+                              ),
+                              AppSpacing.w4,
+                              Text(
+                                'ACTIVE',
+                                style: AppTypography.captionSemibold.copyWith(
+                                  color: Colors.black,
+                                  fontSize: 10,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                     ],
                   ),
-                  Divider(color: AppColors.border.withOpacity(0.5), height: 32, thickness: 1),
+                  Divider(color: AppColors.border, height: 32, thickness: 2),
                   // Active Service Row
                   Row(
                     children: [
                       Container(
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
-                          color: (_isServiceActive ? AppColors.primary : AppColors.textSecondary).withOpacity(0.08),
-                          borderRadius: BorderRadius.circular(12),
+                          color: _isServiceActive ? AppColors.accent : Colors.white,
+                          borderRadius: BorderRadius.circular(8),
                           border: Border.all(
-                            color: (_isServiceActive ? AppColors.primary : AppColors.textSecondary).withOpacity(0.15),
-                            width: 1,
+                            color: AppColors.border,
+                            width: 2,
                           ),
                         ),
-                        child: Icon(
+                        child: const Icon(
                           Icons.offline_bolt_rounded,
-                          color: _isServiceActive ? AppColors.primary : AppColors.textSecondary,
+                          color: Colors.black,
                           size: 20,
                         ),
                       ),
@@ -247,7 +278,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> with WidgetsBin
                                   : 'Start service to allow floating notes',
                               style: AppTypography.caption.copyWith(
                                 color: _isServiceActive
-                                    ? AppColors.primary
+                                    ? const Color(0xFF008A5E) // Accessible green
                                     : AppColors.textSecondary,
                               ),
                             ),
@@ -256,17 +287,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> with WidgetsBin
                       ),
                       Switch(
                         value: _isServiceActive,
-                        activeColor: AppColors.accent,
-                        activeTrackColor: AppColors.primary.withOpacity(0.2),
-                        inactiveThumbColor: AppColors.textSecondary,
-                        inactiveTrackColor: AppColors.cardBg,
+                        activeColor: Colors.black,
+                        activeTrackColor: AppColors.accent,
+                        inactiveThumbColor: Colors.black,
+                        inactiveTrackColor: Colors.white,
                         trackOutlineColor: WidgetStateProperty.resolveWith<Color?>(
-                          (states) {
-                            if (states.contains(WidgetState.selected)) {
-                              return AppColors.primary.withOpacity(0.5);
-                            }
-                            return AppColors.border;
-                          },
+                          (states) => AppColors.border,
                         ),
                         onChanged: _toggleService,
                       ),
@@ -287,7 +313,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> with WidgetsBin
                     children: [
                       const Icon(
                         Icons.photo_size_select_large_rounded,
-                        color: AppColors.primary,
+                        color: Colors.black,
                         size: 18,
                       ),
                       AppSpacing.w8,
@@ -314,12 +340,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> with WidgetsBin
                       _buildSizeOption(75, 'Large', settings.globalBubbleSize),
                     ],
                   ),
-                  Divider(color: AppColors.border.withOpacity(0.5), height: 32, thickness: 1),
+                  Divider(color: AppColors.border, height: 32, thickness: 2),
                   Row(
                     children: [
                       const Icon(
                         Icons.category_rounded,
-                        color: AppColors.primary,
+                        color: Colors.black,
                         size: 18,
                       ),
                       AppSpacing.w8,
@@ -361,31 +387,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> with WidgetsBin
     return Row(
       children: [
         Container(
-          width: 4,
-          height: 18,
+          width: 8,
+          height: 20,
           decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [AppColors.primary, AppColors.accent],
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-            ),
-            borderRadius: BorderRadius.circular(2),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.primary.withOpacity(0.3),
-                blurRadius: 4,
-                offset: const Offset(1, 1),
-              ),
-            ],
+            color: AppColors.primary,
+            border: Border.all(color: Colors.black, width: 2),
           ),
         ),
         AppSpacing.w12,
         Text(
-          title,
+          title.toUpperCase(),
           style: AppTypography.headingMedium.copyWith(
             color: AppColors.textPrimary,
-            fontWeight: FontWeight.w600, // Outfit-semibold
-            letterSpacing: 0.2,
+            letterSpacing: 0.5,
           ),
         ),
       ],
@@ -398,14 +412,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> with WidgetsBin
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
         color: AppColors.cardBg,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppColors.border.withOpacity(0.4), width: 1.5),
-        boxShadow: [
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.border, width: 2.5),
+        boxShadow: const [
           BoxShadow(
-            color: Colors.black.withOpacity(0.15),
-            blurRadius: 20,
-            spreadRadius: -6,
-            offset: const Offset(0, 10),
+            color: Colors.black,
+            offset: Offset(4, 4),
+            blurRadius: 0,
           )
         ],
       ),
@@ -416,66 +429,40 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> with WidgetsBin
   Widget _buildSizeOption(int size, String label, int currentSize) {
     final isSelected = currentSize == size;
     return Expanded(
-      child: AnimatedScale(
-        scale: isSelected ? 1.04 : 1.0,
-        duration: const Duration(milliseconds: 200),
-        curve: Curves.easeOutBack,
-        child: PressableScale(
-          onTap: () async {
-            await ref.read(settingsProvider.notifier).updateBubbleSize(size);
-            if (_isServiceActive) {
-              _syncAllOverlaysWithSettings();
-            }
-          },
-          child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 4),
-            padding: const EdgeInsets.all(1.5), // Gradient border width spacer
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
-              gradient: isSelected
-                  ? const LinearGradient(
-                      colors: [AppColors.primary, AppColors.accent],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    )
-                  : null,
-              boxShadow: isSelected
-                  ? [
-                      BoxShadow(
-                        color: AppColors.primary.withOpacity(0.15),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ]
-                  : null,
+      child: PressableScale(
+        onTap: () async {
+          await ref.read(settingsProvider.notifier).updateBubbleSize(size);
+          if (_isServiceActive) {
+            _syncAllOverlaysWithSettings();
+          }
+        },
+        child: Container(
+          margin: const EdgeInsets.symmetric(horizontal: 4),
+          decoration: BoxDecoration(
+            color: isSelected ? AppColors.primary : Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: AppColors.border,
+              width: 2.5,
             ),
-            child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 14),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(14.5),
-                color: isSelected ? null : AppColors.cardBg.withOpacity(0.5),
-                gradient: isSelected
-                    ? LinearGradient(
-                        colors: [
-                          AppColors.primary.withOpacity(0.12),
-                          AppColors.primary.withOpacity(0.02),
-                        ],
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                      )
-                    : null,
-                border: isSelected
-                    ? null
-                    : Border.all(
-                        color: AppColors.border.withOpacity(0.4),
-                        width: 1,
-                      ),
-              ),
-              alignment: Alignment.center,
+            boxShadow: isSelected
+                ? const [
+                    BoxShadow(
+                      color: Colors.black,
+                      offset: Offset(3, 3),
+                      blurRadius: 0,
+                    ),
+                  ]
+                : null,
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            child: Center(
               child: Text(
-                label,
+                label.toUpperCase(),
                 style: AppTypography.bodySemibold.copyWith(
-                  color: isSelected ? AppColors.primary : AppColors.textSecondary,
+                  color: Colors.black,
+                  fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
                   fontSize: 12,
                 ),
               ),
@@ -488,79 +475,50 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> with WidgetsBin
 
   Widget _buildShapeOption(String shapeValue, String label, IconData icon, String currentShape) {
     final isSelected = currentShape == shapeValue;
-    return AnimatedScale(
-      scale: isSelected ? 1.04 : 1.0,
-      duration: const Duration(milliseconds: 200),
-      curve: Curves.easeOutBack,
-      child: PressableScale(
-        onTap: () async {
-          await ref.read(settingsProvider.notifier).updateBubbleShape(shapeValue);
-          if (_isServiceActive) {
-            _syncAllOverlaysWithSettings();
-          }
-        },
-        child: Container(
-          padding: const EdgeInsets.all(1.5), // Gradient border width spacer
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            gradient: isSelected
-                ? const LinearGradient(
-                    colors: [AppColors.primary, AppColors.accent],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  )
-                : null,
-            boxShadow: isSelected
-                ? [
-                    BoxShadow(
-                      color: AppColors.primary.withOpacity(0.15),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ]
-                : null,
+    return PressableScale(
+      onTap: () async {
+        await ref.read(settingsProvider.notifier).updateBubbleShape(shapeValue);
+        if (_isServiceActive) {
+          _syncAllOverlaysWithSettings();
+        }
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.accent : Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: AppColors.border,
+            width: 2.5,
           ),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(14.5),
-              color: isSelected ? null : AppColors.cardBg.withOpacity(0.5),
-              gradient: isSelected
-                  ? LinearGradient(
-                      colors: [
-                        AppColors.primary.withOpacity(0.12),
-                        AppColors.primary.withOpacity(0.02),
-                      ],
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                    )
-                  : null,
-              border: isSelected
-                  ? null
-                  : Border.all(
-                      color: AppColors.border.withOpacity(0.4),
-                      width: 1,
-                    ),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  icon,
-                  size: 16,
-                  color: isSelected ? AppColors.primary : AppColors.textSecondary,
-                ),
-                AppSpacing.w8,
-                Text(
-                  label,
-                  style: AppTypography.bodySemibold.copyWith(
-                    color: isSelected ? AppColors.primary : AppColors.textSecondary,
-                    fontSize: 11.5,
+          boxShadow: isSelected
+              ? const [
+                  BoxShadow(
+                    color: Colors.black,
+                    offset: Offset(3, 3),
+                    blurRadius: 0,
                   ),
-                ),
-              ],
+                ]
+              : null,
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: 16,
+              color: Colors.black,
             ),
-          ),
+            AppSpacing.w8,
+            Text(
+              label.toUpperCase(),
+              style: AppTypography.bodySemibold.copyWith(
+                color: Colors.black,
+                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                fontSize: 11.5,
+              ),
+            ),
+          ],
         ),
       ),
     );

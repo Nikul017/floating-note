@@ -4,14 +4,14 @@ import '../core/typography/app_typography.dart';
 import 'app_colors.dart';
 
 class AppTheme {
-  static ThemeData get darkTheme {
+  static ThemeData get brutalistTheme {
     return ThemeData(
       useMaterial3: true,
-      brightness: Brightness.dark,
-      textTheme: GoogleFonts.interTextTheme(
-        ThemeData.dark().textTheme,
+      brightness: Brightness.light,
+      textTheme: GoogleFonts.plusJakartaSansTextTheme(
+        ThemeData.light().textTheme,
       ),
-      colorScheme: const ColorScheme.dark(
+      colorScheme: const ColorScheme.light(
         background: AppColors.background,
         surface: AppColors.cardBg,
         primary: AppColors.primary,
@@ -24,8 +24,8 @@ class AppTheme {
         color: AppColors.cardBg,
         elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-          side: const BorderSide(color: AppColors.border, width: 1.5),
+          borderRadius: BorderRadius.circular(12),
+          side: const BorderSide(color: AppColors.border, width: 2.5),
         ),
       ),
       appBarTheme: AppBarTheme(
@@ -38,11 +38,12 @@ class AppTheme {
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primary,
-          foregroundColor: Colors.white,
+          foregroundColor: Colors.black,
           elevation: 0,
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
+            side: const BorderSide(color: AppColors.border, width: 2.5),
           ),
           textStyle: AppTypography.bodySemibold,
         ),
@@ -51,15 +52,16 @@ class AppTheme {
         backgroundColor: AppColors.cardBg,
         elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-          side: const BorderSide(color: AppColors.border, width: 1.5),
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: AppColors.border, width: 2.5),
         ),
       ),
       bottomSheetTheme: const BottomSheetThemeData(
         backgroundColor: AppColors.cardBg,
         elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          side: BorderSide(color: AppColors.border, width: 2.5),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
@@ -67,25 +69,26 @@ class AppTheme {
         fillColor: AppColors.cardBg,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
+          borderSide: const BorderSide(color: AppColors.border, width: 2.5),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.border, width: 1),
+          borderSide: const BorderSide(color: AppColors.border, width: 2.5),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+          borderSide: const BorderSide(color: AppColors.primary, width: 2.5),
         ),
-        labelStyle: AppTypography.bodyMedium,
+        labelStyle: AppTypography.bodyMedium.copyWith(color: AppColors.textPrimary),
         hintStyle: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondary),
       ),
       floatingActionButtonTheme: FloatingActionButtonThemeData(
         backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
-        elevation: 4,
+        foregroundColor: Colors.black,
+        elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(12),
+          side: const BorderSide(color: AppColors.border, width: 2.5),
         ),
       ),
     );

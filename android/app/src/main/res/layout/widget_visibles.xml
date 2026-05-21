@@ -12,13 +12,17 @@
         android:background="@drawable/bg_widget"
         android:gravity="center"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:paddingLeft="16dp"
+        android:paddingTop="16dp"
+        android:paddingRight="21dp"
+        android:paddingBottom="21dp">
 
         <ImageView
             android:id="@+id/img_widget_visibles"
             android:layout_width="32dp"
             android:layout_height="32dp"
             android:src="@drawable/ic_visibles"
+            android:tint="#000000"
             android:contentDescription="Toggle Visibility" />
 
         <TextView
@@ -27,7 +31,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
             android:text="Visibles"
-            android:textColor="#FFFFFF"
+            android:textColor="#000000"
             android:textSize="13sp"
             android:fontFamily="sans-serif-medium" />
     </LinearLayout>

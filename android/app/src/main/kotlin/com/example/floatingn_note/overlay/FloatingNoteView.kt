@@ -4,7 +4,14 @@ import android.animation.Animator
 import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.Color
+import android.graphics.ColorFilter
+import android.graphics.Canvas
+import android.graphics.Paint
+import android.graphics.Path
 import android.graphics.PixelFormat
+import android.graphics.RectF
+import android.graphics.Typeface
+import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.os.Handler
 import android.os.Looper
@@ -161,7 +168,9 @@ class FloatingNoteView(
         mainCard = LinearLayout(context).apply {
             layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT)
             orientation = LinearLayout.VERTICAL
-            setPadding(dpToPx(8), dpToPx(8), dpToPx(8), dpToPx(8))
+            val padding = dpToPx(10)
+            val shadowOffset = dpToPx(6)
+            setPadding(padding, padding, padding + shadowOffset, padding + shadowOffset)
             visibility = if (isExpanded) View.VISIBLE else View.GONE
         }
         addView(mainCard)
@@ -211,7 +220,7 @@ class FloatingNoteView(
             textSize = 14f
             text = if (note.title.isNotEmpty()) note.title else "Sticky Note"
             setTextColor(Color.BLACK)
-            setTypeface(null, android.graphics.Typeface.BOLD)
+            typeface = Typeface.create("sans-serif-black", Typeface.BOLD)
             visibility = if (isEditing) View.GONE else View.VISIBLE
             setOnClickListener {
                 enableFocusAndEditing(focusTitle = true)
@@ -227,7 +236,7 @@ class FloatingNoteView(
             }
             textSize = 14f
             setTextColor(Color.BLACK)
-            setTypeface(null, android.graphics.Typeface.BOLD)
+            typeface = Typeface.create("sans-serif-black", Typeface.BOLD)
             background = null
             isSingleLine = true
             hint = "Title..."
@@ -312,7 +321,7 @@ class FloatingNoteView(
             val shape = GradientDrawable().apply {
                 shape = GradientDrawable.OVAL
                 setColor(getHexColor(c))
-                setStroke(dpToPx(1.5f), Color.parseColor("#40000000"))
+                setStroke(dpToPx(2f), Color.BLACK)
             }
             colorView.background = shape
             editColorPicker.addView(colorView)
@@ -345,6 +354,7 @@ class FloatingNoteView(
             textSize = 13f
             text = if (note.content.isNotEmpty()) note.content else "Click to edit..."
             setTextColor(Color.parseColor("#DE000000"))
+            typeface = Typeface.create("sans-serif", Typeface.NORMAL)
             visibility = if (isEditing) View.GONE else View.VISIBLE
             setOnClickListener {
                 enableFocusAndEditing(focusTitle = false)
@@ -357,6 +367,7 @@ class FloatingNoteView(
             layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
             textSize = 13f
             setTextColor(Color.parseColor("#DE000000"))
+            typeface = Typeface.create("sans-serif", Typeface.NORMAL)
             background = null
             isSingleLine = false
             inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE
@@ -383,39 +394,44 @@ class FloatingNoteView(
 
     private fun applyTheme() {
         val stickyBg = getHexColor(note.color)
-        val isDarkNote = note.color.equals("charcoal", true) || note.color.equals("glass", true)
-        val textHex = if (isDarkNote) "#ECEFF1" else "#263238"
-        val descHex = if (isDarkNote) "#B0BEC5" else "#455A64"
+        val isDarkNote = note.color.equals("charcoal", true) || 
+                         note.color.equals("indigo", true) || 
+                         note.color.equals("maroon", true) || 
+                         note.color.equals("dark_mint", true)
+        val textHex = if (isDarkNote) "#FFFFFF" else "#000000"
+        val descHex = if (isDarkNote) "#E2E8F0" else "#2D2D2D"
 
         // Set card rounded background
-        val backgroundShape = GradientDrawable().apply {
-            shape = GradientDrawable.RECTANGLE
-            cornerRadius = dpToPx(16).toFloat()
-            setColor(stickyBg)
-            setStroke(dpToPx(1), Color.parseColor(if (isDarkNote) "#20FFFFFF" else "#20000000"))
-        }
-        mainCard.background = backgroundShape
+        mainCard.background = BrutalistCardDrawable(
+            fillColor = stickyBg,
+            borderColor = Color.BLACK,
+            borderWidth = dpToPx(2.5f).toFloat(),
+            cornerRadius = dpToPx(16f).toFloat(),
+            shadowColor = Color.BLACK,
+            shadowOffset = dpToPx(6f).toFloat()
+        )
 
         // Update text colors
         titleView.setTextColor(Color.parseColor(textHex))
         titleEdit.setTextColor(Color.parseColor(textHex))
-        titleEdit.setHintTextColor(Color.parseColor(if (isDarkNote) "#80ECEFF1" else "#80263238"))
+        titleEdit.setHintTextColor(Color.parseColor(if (isDarkNote) "#80FFFFFF" else "#80000000"))
         contentTextView.setTextColor(Color.parseColor(descHex))
         contentEdit.setTextColor(Color.parseColor(descHex))
-        contentEdit.setHintTextColor(Color.parseColor(if (isDarkNote) "#80B0BEC5" else "#80455A64"))
+        contentEdit.setHintTextColor(Color.parseColor(if (isDarkNote) "#80E2E8F0" else "#802D2D2D"))
 
         if (note.type == "checklist") {
             populateChecklist()
         }
 
-        // Set mini-dock bubble background
-        val strokeColor = Color.parseColor(if (isDarkNote) "#FFFFFF" else "#7C4DFF")
+        // Set mini-dock bubble background (without shadow effect, normal black border)
         dockBubble.background = BubbleShapeDrawable(
             shapeType = note.bubbleShape,
             fillColor = stickyBg,
-            strokeColor = strokeColor,
-            strokeWidth = dpToPx(2f).toFloat(),
-            cornerRadius = dpToPx(12f).toFloat() // cornerRadius for squircle
+            strokeColor = Color.BLACK,
+            strokeWidth = dpToPx(2.5f).toFloat(),
+            cornerRadius = dpToPx(12f).toFloat(), // cornerRadius for squircle
+            shadowColor = Color.BLACK,
+            shadowOffset = 0f
         )
 
         editBarPalette.setTextColor(Color.parseColor(textHex))
@@ -995,39 +1011,39 @@ class FloatingNoteView(
             } catch (e: Exception) {}
         }
         return when (name) {
-            "yellow" -> Color.parseColor("#FFF59D")
-            "pink" -> Color.parseColor("#F8BBD0")
-            "mint" -> Color.parseColor("#C8E6C9")
-            "blue" -> Color.parseColor("#B3E5FC")
-            "lavender" -> Color.parseColor("#E1BEE7")
-            "orange" -> Color.parseColor("#FFCC80")
-            "rose" -> Color.parseColor("#FFCDD2")
-            "purple" -> Color.parseColor("#D1C4E9")
-            "teal" -> Color.parseColor("#B2DFDB")
-            "green" -> Color.parseColor("#DCEDC8")
-            "lime" -> Color.parseColor("#F0F4C3")
-            "cream" -> Color.parseColor("#FFF9C4")
-            "amber" -> Color.parseColor("#FFE082")
-            "coral" -> Color.parseColor("#FFAB91")
-            "clay" -> Color.parseColor("#BCAAA4")
-            "grey" -> Color.parseColor("#CFD8DC")
-            "cotton" -> Color.parseColor("#F3E5F5")
-            "sky" -> Color.parseColor("#E0F7FA")
-            "emerald" -> Color.parseColor("#E8F5E9")
-            "pistachio" -> Color.parseColor("#F1F8E9")
-            "sand" -> Color.parseColor("#FFF8E1")
-            "plum" -> Color.parseColor("#FCE4EC")
-            "cocoa" -> Color.parseColor("#EFEBE9")
-            "charcoal" -> Color.parseColor("#263238")
-            "indigo" -> Color.parseColor("#1A237E")
-            "maroon" -> Color.parseColor("#3E2723")
-            "dark_mint" -> Color.parseColor("#004D40")
-            "glass" -> Color.parseColor("#CC1A1A24")
+            "yellow" -> Color.parseColor("#FFE853")
+            "pink" -> Color.parseColor("#FF85C2")
+            "mint" -> Color.parseColor("#5EFFAD")
+            "blue" -> Color.parseColor("#6BE5FF")
+            "lavender" -> Color.parseColor("#D69CFF")
+            "orange" -> Color.parseColor("#FF9D42")
+            "rose" -> Color.parseColor("#FF7A82")
+            "purple" -> Color.parseColor("#A58EFF")
+            "teal" -> Color.parseColor("#42FFD2")
+            "green" -> Color.parseColor("#88FF5E")
+            "lime" -> Color.parseColor("#D4FF5E")
+            "cream" -> Color.parseColor("#FFF8BD")
+            "amber" -> Color.parseColor("#FFCE3A")
+            "coral" -> Color.parseColor("#FF7A5E")
+            "clay" -> Color.parseColor("#D9BBA9")
+            "grey" -> Color.parseColor("#C5D1D6")
+            "cotton" -> Color.parseColor("#FFC6FA")
+            "sky" -> Color.parseColor("#B5FAFF")
+            "emerald" -> Color.parseColor("#8CFFB7")
+            "pistachio" -> Color.parseColor("#D4FFA6")
+            "sand" -> Color.parseColor("#FFF2C2")
+            "plum" -> Color.parseColor("#FFC0DB")
+            "cocoa" -> Color.parseColor("#E5D5CD")
+            "charcoal" -> Color.parseColor("#2B2F3A")
+            "indigo" -> Color.parseColor("#4856FF")
+            "maroon" -> Color.parseColor("#FF5252")
+            "dark_mint" -> Color.parseColor("#00C292")
+            "glass" -> Color.parseColor("#E2E8F0")
             else -> {
                 try {
                     Color.parseColor("#$name")
                 } catch (e: Exception) {
-                    Color.parseColor("#FFF59D")
+                    Color.parseColor("#FFE853")
                 }
             }
         }
@@ -1036,12 +1052,15 @@ class FloatingNoteView(
     private fun populateChecklist() {
         checklistContainer.removeAllViews()
         
-        val isDarkNote = note.color.equals("charcoal", true) || note.color.equals("glass", true)
-        val textHex = if (isDarkNote) "#ECEFF1" else "#263238"
-        val descHex = if (isDarkNote) "#B0BEC5" else "#455A64"
+        val isDarkNote = note.color.equals("charcoal", true) || 
+                         note.color.equals("indigo", true) || 
+                         note.color.equals("maroon", true) || 
+                         note.color.equals("dark_mint", true)
+        val textHex = if (isDarkNote) "#FFFFFF" else "#000000"
+        val descHex = if (isDarkNote) "#E2E8F0" else "#2D2D2D"
         val textColor = Color.parseColor(descHex)
         val titleColor = Color.parseColor(textHex)
-        val checkedColor = Color.parseColor(if (isDarkNote) "#60B0BEC5" else "#60455A64")
+        val checkedColor = Color.parseColor(if (isDarkNote) "#60E2E8F0" else "#602D2D2D")
 
         for ((index, item) in note.checklist.withIndex()) {
             val row = LinearLayout(context).apply {
@@ -1055,8 +1074,6 @@ class FloatingNoteView(
                 orientation = LinearLayout.HORIZONTAL
                 gravity = Gravity.CENTER_VERTICAL
             }
-
-
 
             // Checkbox
             val checkbox = CheckBox(context).apply {
@@ -1090,9 +1107,10 @@ class FloatingNoteView(
                     setText(item.text)
                     textSize = 13f
                     setTextColor(textColor)
+                    typeface = Typeface.create("sans-serif", Typeface.NORMAL)
                     background = null
                     hint = "Item..."
-                    setHintTextColor(Color.parseColor(if (isDarkNote) "#50B0BEC5" else "#50455A64"))
+                    setHintTextColor(Color.parseColor(if (isDarkNote) "#50E2E8F0" else "#502D2D2D"))
                 }
                 
                 checkbox.setOnCheckedChangeListener { _, isChecked ->
@@ -1143,6 +1161,7 @@ class FloatingNoteView(
                     text = item.text
                     textSize = 13f
                     setTextColor(if (item.checked) checkedColor else textColor)
+                    typeface = Typeface.create("sans-serif", Typeface.NORMAL)
                     if (item.checked) {
                         paintFlags = paintFlags or android.graphics.Paint.STRIKE_THRU_TEXT_FLAG
                     } else {
@@ -1219,7 +1238,7 @@ class FloatingNoteView(
                 text = "+ "
                 textSize = 14f
                 setTextColor(titleColor)
-                setTypeface(null, android.graphics.Typeface.BOLD)
+                typeface = Typeface.create("sans-serif-black", Typeface.BOLD)
             }
             addItemRow.addView(plusIcon)
             
@@ -1227,6 +1246,7 @@ class FloatingNoteView(
                 text = "Add Item"
                 textSize = 13f
                 setTextColor(textColor)
+                typeface = Typeface.create("sans-serif-medium", Typeface.NORMAL)
             }
             addItemRow.addView(addText)
             checklistContainer.addView(addItemRow)
@@ -1239,49 +1259,49 @@ class BubbleShapeDrawable(
     private val fillColor: Int,
     private val strokeColor: Int,
     private val strokeWidth: Float,
-    private val cornerRadius: Float = 0f
-) : android.graphics.drawable.Drawable() {
+    private val cornerRadius: Float = 0f,
+    private val shadowColor: Int = Color.BLACK,
+    private val shadowOffset: Float = 0f
+) : Drawable() {
 
-    private val fillPaint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
-        style = android.graphics.Paint.Style.FILL
+    private val fillPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        style = Paint.Style.FILL
         color = fillColor
     }
 
-    private val strokePaint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
-        style = android.graphics.Paint.Style.STROKE
+    private val strokePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        style = Paint.Style.STROKE
         color = strokeColor
         strokeWidth = this@BubbleShapeDrawable.strokeWidth
     }
 
-    private val path = android.graphics.Path()
+    private val shadowPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        style = Paint.Style.FILL
+        color = shadowColor
+    }
 
-    override fun draw(canvas: android.graphics.Canvas) {
-        val bounds = bounds
-        val w = bounds.width().toFloat()
-        val h = bounds.height().toFloat()
-        if (w <= 0 || h <= 0) return
-
-        path.reset()
+    private fun getPathForRect(rect: RectF): Path {
+        val path = Path()
+        val w = rect.width()
+        val h = rect.height()
+        val strokeHalf = strokeWidth / 2f
+        val left = rect.left + strokeHalf
+        val top = rect.top + strokeHalf
+        val right = rect.right - strokeHalf
+        val bottom = rect.bottom - strokeHalf
 
         when (shapeType.lowercase()) {
             "square" -> {
-                path.addRect(strokeWidth / 2f, strokeWidth / 2f, w - strokeWidth / 2f, h - strokeWidth / 2f, android.graphics.Path.Direction.CW)
+                path.addRect(left, top, right, bottom, Path.Direction.CW)
             }
             "squircle" -> {
                 val r = if (cornerRadius > 0f) cornerRadius else w * 0.25f
-                path.addRoundRect(
-                    strokeWidth / 2f,
-                    strokeWidth / 2f,
-                    w - strokeWidth / 2f,
-                    h - strokeWidth / 2f,
-                    r, r,
-                    android.graphics.Path.Direction.CW
-                )
+                path.addRoundRect(left, top, right, bottom, r, r, Path.Direction.CW)
             }
             "hexagon" -> {
-                val cx = w / 2f
-                val cy = h / 2f
-                val r = Math.min(w, h) / 2f - strokeWidth / 2f
+                val cx = rect.left + w / 2f
+                val cy = rect.top + h / 2f
+                val r = Math.min(w, h) / 2f - strokeHalf
                 for (i in 0 until 6) {
                     val angle = i * Math.PI / 3
                     val x = (cx + r * Math.cos(angle)).toFloat()
@@ -1295,28 +1315,115 @@ class BubbleShapeDrawable(
                 path.close()
             }
             else -> { // circle
-                path.addOval(strokeWidth / 2f, strokeWidth / 2f, w - strokeWidth / 2f, h - strokeWidth / 2f, android.graphics.Path.Direction.CW)
+                path.addOval(left, top, right, bottom, Path.Direction.CW)
             }
         }
+        return path
+    }
 
-        canvas.drawPath(path, fillPaint)
-        canvas.drawPath(path, strokePaint)
+    override fun draw(canvas: Canvas) {
+        val bounds = bounds
+        val w = bounds.width().toFloat()
+        val h = bounds.height().toFloat()
+        if (w <= 0 || h <= 0) return
+
+        if (shadowOffset > 0f) {
+            val shadowRect = RectF(shadowOffset, shadowOffset, w, h)
+            val shadowPath = getPathForRect(shadowRect)
+            canvas.drawPath(shadowPath, shadowPaint)
+        }
+
+        val cardRect = RectF(0f, 0f, w - shadowOffset, h - shadowOffset)
+        val cardPath = getPathForRect(cardRect)
+        canvas.drawPath(cardPath, fillPaint)
+        canvas.drawPath(cardPath, strokePaint)
     }
 
     override fun setAlpha(alpha: Int) {
         fillPaint.alpha = alpha
-        val strokeAlpha = (alpha * (android.graphics.Color.alpha(strokeColor) / 255.0)).toInt()
+        val strokeAlpha = (alpha * (Color.alpha(strokeColor) / 255.0)).toInt()
         strokePaint.alpha = strokeAlpha
+        shadowPaint.alpha = alpha
         invalidateSelf()
     }
 
-    override fun setColorFilter(colorFilter: android.graphics.ColorFilter?) {
+    override fun setColorFilter(colorFilter: ColorFilter?) {
         fillPaint.colorFilter = colorFilter
         strokePaint.colorFilter = colorFilter
+        shadowPaint.colorFilter = colorFilter
         invalidateSelf()
     }
 
     override fun getOpacity(): Int {
-        return android.graphics.PixelFormat.TRANSLUCENT
+        return PixelFormat.TRANSLUCENT
+    }
+}
+
+class BrutalistCardDrawable(
+    private val fillColor: Int,
+    private val borderColor: Int,
+    private val borderWidth: Float,
+    private val cornerRadius: Float,
+    private val shadowColor: Int,
+    private val shadowOffset: Float
+) : Drawable() {
+
+    private val fillPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        style = Paint.Style.FILL
+        color = fillColor
+    }
+
+    private val borderPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        style = Paint.Style.STROKE
+        color = borderColor
+        strokeWidth = this@BrutalistCardDrawable.borderWidth
+    }
+
+    private val shadowPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        style = Paint.Style.FILL
+        color = shadowColor
+    }
+
+    override fun draw(canvas: Canvas) {
+        val bounds = bounds
+        val w = bounds.width().toFloat()
+        val h = bounds.height().toFloat()
+        if (w <= 0 || h <= 0) return
+
+        val shadowRect = RectF(
+            shadowOffset,
+            shadowOffset,
+            w,
+            h
+        )
+
+        val cardRect = RectF(
+            0f,
+            0f,
+            w - shadowOffset,
+            h - shadowOffset
+        )
+
+        canvas.drawRoundRect(shadowRect, cornerRadius, cornerRadius, shadowPaint)
+        canvas.drawRoundRect(cardRect, cornerRadius, cornerRadius, fillPaint)
+        canvas.drawRoundRect(cardRect, cornerRadius, cornerRadius, borderPaint)
+    }
+
+    override fun setAlpha(alpha: Int) {
+        fillPaint.alpha = alpha
+        borderPaint.alpha = alpha
+        shadowPaint.alpha = alpha
+        invalidateSelf()
+    }
+
+    override fun setColorFilter(colorFilter: ColorFilter?) {
+        fillPaint.colorFilter = colorFilter
+        borderPaint.colorFilter = colorFilter
+        shadowPaint.colorFilter = colorFilter
+        invalidateSelf()
+    }
+
+    override fun getOpacity(): Int {
+        return PixelFormat.TRANSLUCENT
     }
 }

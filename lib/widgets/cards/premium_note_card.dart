@@ -38,26 +38,25 @@ class PremiumNoteCard extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: cardBackground,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: isDarkNote ? AppColors.border : Colors.black.withOpacity(0.08),
-          width: 1.5,
+          color: Colors.black,
+          width: 2.5,
         ),
-        boxShadow: [
+        boxShadow: const [
           BoxShadow(
-            color: rawColor.withOpacity(isDarkNote ? 0.08 : 0.22),
-            blurRadius: 16,
-            spreadRadius: -4,
-            offset: const Offset(0, 8),
+            color: Colors.black,
+            offset: Offset(4, 4),
+            blurRadius: 0,
           ),
         ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(9.5), // inner border radius calculation
         child: InkWell(
           onTap: onTap,
-          splashColor: textColor.withOpacity(0.1),
-          highlightColor: textColor.withOpacity(0.05),
+          splashColor: textColor.withOpacity(0.15),
+          highlightColor: textColor.withOpacity(0.08),
           child: Padding(
             padding: const EdgeInsets.all(AppSpacing.md),
             child: Column(
@@ -70,8 +69,9 @@ class PremiumNoteCard extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(6),
                       decoration: BoxDecoration(
-                        color: textColor.withOpacity(0.08),
+                        color: Colors.white,
                         shape: BoxShape.circle,
+                        border: Border.all(color: Colors.black, width: 1.5),
                       ),
                       child: Text(
                         note.icon,
@@ -96,14 +96,14 @@ class PremiumNoteCard extends StatelessWidget {
                       color: Colors.transparent,
                       child: InkWell(
                         onTap: onOpenOverlay,
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(8),
                         splashColor: textColor.withOpacity(0.15),
                         child: Padding(
                           padding: const EdgeInsets.all(6.0),
                           child: Icon(
                             Icons.open_in_new_rounded,
                             size: 15,
-                            color: textColor.withOpacity(0.65),
+                            color: textColor,
                           ),
                         ),
                       ),
@@ -120,18 +120,19 @@ class PremiumNoteCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Icon(
-                          item.checked ? Icons.check_circle : Icons.circle_outlined,
-                          size: 13,
-                          color: textColor.withOpacity(item.checked ? 0.45 : 0.75),
+                          item.checked ? Icons.check_box_rounded : Icons.check_box_outline_blank_rounded,
+                          size: 15,
+                          color: textColor,
                         ),
                         AppSpacing.w8,
                         Expanded(
                           child: Text(
                             item.text.isNotEmpty ? item.text : 'Unspecified Task',
                             style: AppTypography.bodyMedium.copyWith(
-                              color: textColor.withOpacity(item.checked ? 0.45 : 0.85),
+                              color: textColor.withOpacity(item.checked ? 0.5 : 1.0),
                               decoration: item.checked ? TextDecoration.lineThrough : null,
-                              fontSize: 12,
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.w600,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -145,8 +146,8 @@ class PremiumNoteCard extends StatelessWidget {
                     Text(
                       '+ ${totalItems - 3} more items',
                       style: AppTypography.caption.copyWith(
-                        color: textColor.withOpacity(0.55),
-                        fontWeight: FontWeight.bold,
+                        color: textColor.withOpacity(0.7),
+                        fontWeight: FontWeight.w800,
                         fontSize: 10,
                       ),
                     ),
@@ -156,15 +157,22 @@ class PremiumNoteCard extends StatelessWidget {
                   Row(
                     children: [
                       Expanded(
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(4),
-                          child: LinearProgressIndicator(
-                            value: progress,
-                            backgroundColor: textColor.withOpacity(0.1),
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              textColor.withOpacity(0.65),
+                        child: Container(
+                          height: 8,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(4),
+                            border: Border.all(color: Colors.black, width: 1.5),
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(2),
+                            child: LinearProgressIndicator(
+                              value: progress,
+                              backgroundColor: Colors.transparent,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                textColor == Colors.white ? Colors.white : AppColors.primary,
+                              ),
                             ),
-                            minHeight: 4,
                           ),
                         ),
                       ),
@@ -172,9 +180,9 @@ class PremiumNoteCard extends StatelessWidget {
                       Text(
                         '${(progress * 100).toInt()}%',
                         style: AppTypography.caption.copyWith(
-                          color: textColor.withOpacity(0.7),
-                          fontWeight: FontWeight.bold,
-                          fontSize: 10,
+                          color: textColor,
+                          fontWeight: FontWeight.w800,
+                          fontSize: 10.5,
                         ),
                       ),
                     ],
@@ -185,9 +193,10 @@ class PremiumNoteCard extends StatelessWidget {
                     maxLines: 5,
                     overflow: TextOverflow.ellipsis,
                     style: AppTypography.bodyMedium.copyWith(
-                      color: textColor.withOpacity(0.8),
+                      color: textColor.withOpacity(0.9),
                       fontSize: 13,
                       height: 1.45,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ],
@@ -195,11 +204,11 @@ class PremiumNoteCard extends StatelessWidget {
                 // Footer Badges
                 if (_hasBadge) ...[
                   AppSpacing.h12,
-                  Divider(height: 1, thickness: 0.5, color: Colors.black.withOpacity(0.06)),
+                  Divider(height: 1, thickness: 1.5, color: textColor.withOpacity(0.15)),
                   AppSpacing.h8,
                   Wrap(
                     spacing: 6,
-                    runSpacing: 4,
+                    runSpacing: 6,
                     children: [
                       if (note.type == NoteType.pinned)
                         _buildBadge('Pinned', Icons.push_pin, textColor),
@@ -230,20 +239,28 @@ class PremiumNoteCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: textColor.withOpacity(0.06),
-        borderRadius: BorderRadius.circular(10),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.black, width: 1.5),
+        boxShadow: const [
+          BoxShadow(
+            color: Colors.black,
+            offset: Offset(1.5, 1.5),
+            blurRadius: 0,
+          ),
+        ],
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 10, color: textColor.withOpacity(0.65)),
+          Icon(icon, size: 10, color: Colors.black),
           AppSpacing.w4,
           Text(
             label,
             style: AppTypography.caption.copyWith(
-              color: textColor.withOpacity(0.8),
-              fontWeight: FontWeight.w600,
-              fontSize: 10,
+              color: Colors.black,
+              fontWeight: FontWeight.w800,
+              fontSize: 9.5,
             ),
           ),
         ],
