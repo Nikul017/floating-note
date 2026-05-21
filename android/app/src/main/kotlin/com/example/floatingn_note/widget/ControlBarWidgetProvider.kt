@@ -20,6 +20,13 @@ class ControlBarWidgetProvider : AppWidgetProvider() {
         for (appWidgetId in appWidgetIds) {
             val views = RemoteViews(context.packageName, R.layout.widget_control_bar)
 
+            // Dynamically show Visibles / Hidden state icon and text
+            val isVisible = OverlayService.overlaysVisible
+            val visibleIcon = if (isVisible) R.drawable.ic_visibles else R.drawable.ic_invisibles
+            val visibleText = if (isVisible) "Visibles" else "Hidden"
+            views.setImageViewResource(R.id.img_bar_visibles, visibleIcon)
+            views.setTextViewText(R.id.txt_bar_visibles, visibleText)
+
             // 1. New Button Pending Intent
             val newIntent = Intent(context, OverlayService::class.java).apply {
                 action = OverlayService.ACTION_QUICK_CREATE

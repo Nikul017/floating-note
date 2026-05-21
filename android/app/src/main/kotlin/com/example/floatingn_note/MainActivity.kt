@@ -16,9 +16,15 @@ import io.flutter.plugin.common.MethodChannel
 class MainActivity : FlutterActivity() {
 
     private val CHANNEL = "com.example.floatnotex/overlay"
+    private var pendingQuickCreate = false
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+
+        // Check if launched from widget when app was dead
+        if (intent?.action == "com.example.floatingn_note.QUICK_CREATE") {
+            pendingQuickCreate = true
+        }
 
         val channel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL)
         
@@ -27,6 +33,13 @@ class MainActivity : FlutterActivity() {
 
         channel.setMethodCallHandler { call, result ->
             when (call.method) {
+                "onDartInitialized" -> {
+                    if (pendingQuickCreate) {
+                        pendingQuickCreate = false
+                        channel.invokeMethod("onQuickCreate", null)
+                    }
+                    result.success(null)
+                }
                 "checkOverlayPermission" -> {
                     result.success(checkOverlayPermission())
                 }
@@ -164,5 +177,18 @@ class MainActivity : FlutterActivity() {
         return NoteData(
             id, title, content, type, color, icon, opacity, posX, posY, width, height, isDocked, isLocked, bubbleSize, bubbleShape, checklistData
         )
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        if (intent.action == "com.example.floatingn_note.QUICK_CREATE") {
+            OverlayService.methodChannel?.invokeMethod("onQuickCreate", null)
+        }
+    }
+
+    override fun onDestroy() {
+        OverlayService.methodChannel = null
+        super.onDestroy()
     }
 }

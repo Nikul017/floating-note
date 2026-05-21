@@ -15,12 +15,14 @@
         android:padding="16dp">
 
         <ImageView
+            android:id="@+id/img_widget_visibles"
             android:layout_width="32dp"
             android:layout_height="32dp"
             android:src="@drawable/ic_visibles"
             android:contentDescription="Toggle Visibility" />
 
         <TextView
+            android:id="@+id/txt_widget_visibles"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"

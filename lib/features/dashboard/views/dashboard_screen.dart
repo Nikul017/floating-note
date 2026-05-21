@@ -80,7 +80,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // Keep Style Top Search Bar
             _buildTopSearchBar(settings),
             
             // Selected filter tag indicator
@@ -103,12 +102,41 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
-        onPressed: () => _showNoteEditorSheet(context),
-        icon: const Icon(Icons.add),
-        label: const Text('Add Note'),
+      floatingActionButton: PressableScale(
+        onTap: () => _showNoteEditorSheet(context),
+        child: Container(
+          height: 56,
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [AppColors.primary, AppColors.accent],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(28),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primary.withOpacity(0.3),
+                blurRadius: 16,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.add_rounded, color: Colors.white, size: 20),
+              AppSpacing.w8,
+              Text(
+                'Add Note',
+                style: AppTypography.bodySemibold.copyWith(
+                  color: Colors.white,
+                  letterSpacing: 0.2,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -124,18 +152,17 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       ),
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs, vertical: 2),
       decoration: BoxDecoration(
-        color: AppColors.cardBg,
-        borderRadius: BorderRadius.circular(30),
+        color: _isSearchFocused ? AppColors.cardBg : AppColors.cardBg.withOpacity(0.85),
+        borderRadius: BorderRadius.circular(28),
         border: Border.all(
-          color: _isSearchFocused ? AppColors.primary : AppColors.border,
+          color: _isSearchFocused ? AppColors.primary.withOpacity(0.8) : AppColors.border.withOpacity(0.5),
           width: 1.5,
         ),
         boxShadow: [
           BoxShadow(
-            color: _isSearchFocused 
-                ? AppColors.primary.withOpacity(0.15) 
-                : Colors.black.withOpacity(0.2),
-            blurRadius: _isSearchFocused ? 12 : 10,
+            color: _isSearchFocused ? AppColors.primary.withOpacity(0.12) : Colors.black.withOpacity(0.18),
+            blurRadius: _isSearchFocused ? 16 : 8,
+            spreadRadius: _isSearchFocused ? 0 : -2,
             offset: const Offset(0, 4),
           ),
         ],
@@ -217,29 +244,58 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     
     return Padding(
       padding: const EdgeInsets.only(
-        left: AppSpacing.xl,
-        right: AppSpacing.xl,
+        left: AppSpacing.md,
+        right: AppSpacing.md,
         bottom: AppSpacing.xs,
+        top: AppSpacing.xxs,
       ),
-      child: Row(
-        children: [
-          Chip(
-            avatar: const Icon(Icons.filter_list_rounded, size: 14, color: AppColors.primary),
-            label: Text(
-              label,
-              style: AppTypography.bodySemibold.copyWith(color: Colors.white, fontSize: 11),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: 6),
+          decoration: BoxDecoration(
+            color: AppColors.primary.withOpacity(0.08),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: AppColors.primary.withOpacity(0.25),
+              width: 1,
             ),
-            backgroundColor: AppColors.primary.withOpacity(0.15),
-            side: const BorderSide(color: AppColors.border, width: 1),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            deleteIcon: const Icon(Icons.close, size: 14, color: Colors.white70),
-            onDeleted: () {
-              setState(() {
-                _selectedCategory = 'all';
-              });
-            },
           ),
-        ],
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.filter_list_rounded, size: 12, color: AppColors.primary),
+              AppSpacing.w8,
+              Text(
+                label,
+                style: AppTypography.captionSemibold.copyWith(
+                  color: AppColors.primary,
+                  fontSize: 11,
+                ),
+              ),
+              AppSpacing.w8,
+              GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _selectedCategory = 'all';
+                  });
+                },
+                child: Container(
+                  padding: const EdgeInsets.all(2),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withOpacity(0.15),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.close,
+                    size: 10,
+                    color: AppColors.primary,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -252,29 +308,61 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       ),
       child: Column(
         children: [
-          DrawerHeader(
-            decoration: const BoxDecoration(
-              color: AppColors.cardBg,
-              border: Border(bottom: BorderSide(color: AppColors.border, width: 1.5)),
+          Container(
+            padding: const EdgeInsets.only(
+              left: AppSpacing.xl,
+              right: AppSpacing.xl,
+              top: AppSpacing.xxl + AppSpacing.md,
+              bottom: AppSpacing.xl,
+            ),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  AppColors.cardBg,
+                  AppColors.cardBg.withOpacity(0.5),
+                ],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
+              border: Border(
+                bottom: BorderSide(
+                  color: AppColors.border.withOpacity(0.5),
+                  width: 1,
+                ),
+              ),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
-              mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 Row(
                   children: [
-                    const Text('💡', style: TextStyle(fontSize: 28)),
+                    Container(
+                      padding: const EdgeInsets.all(AppSpacing.xs),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withOpacity(0.12),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: AppColors.primary.withOpacity(0.2),
+                          width: 1,
+                        ),
+                      ),
+                      child: const Icon(
+                        Icons.lightbulb_rounded,
+                        color: AppColors.primary,
+                        size: 24,
+                      ),
+                    ),
                     AppSpacing.w12,
                     Text(
                       'FloatNoteX',
                       style: AppTypography.displayMedium.copyWith(
-                        color: AppColors.textPrimary,
-                        fontSize: 24,
+                        fontSize: 22,
+                        letterSpacing: -0.5,
                       ),
                     ),
                   ],
                 ),
-                AppSpacing.h8,
+                AppSpacing.h16,
                 Text(
                   'Your Floating Productivity Panel',
                   style: AppTypography.caption.copyWith(color: AppColors.textSecondary),
@@ -284,7 +372,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           ),
           Expanded(
             child: ListView(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
+              padding: const EdgeInsets.only(top: AppSpacing.sm),
               children: [
                 _buildDrawerItem(
                   icon: Icons.lightbulb_outline_rounded,
@@ -332,25 +420,32 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                   },
                 ),
                 const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.xs),
-                  child: Divider(color: AppColors.border, thickness: 1.5),
+                  padding: EdgeInsets.symmetric(horizontal: AppSpacing.xl, vertical: AppSpacing.sm),
+                  child: Divider(color: AppColors.border, thickness: 1),
                 ),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.xs),
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl, vertical: AppSpacing.sm),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
                         'FOLDERS / LABELS',
-                        style: AppTypography.caption.copyWith(
-                          fontWeight: FontWeight.bold,
+                        style: AppTypography.captionSemibold.copyWith(
                           color: AppColors.primary,
-                          letterSpacing: 1.0,
+                          letterSpacing: 1.2,
+                          fontSize: 10,
                         ),
                       ),
-                      GestureDetector(
+                      PressableScale(
                         onTap: _showAddFolderDialog,
-                        child: const Icon(Icons.add_rounded, size: 18, color: AppColors.primary),
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withOpacity(0.1),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.add_rounded, size: 14, color: AppColors.primary),
+                        ),
                       )
                     ],
                   ),
@@ -358,7 +453,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 // Custom folders list
                 if (settings.folders.isEmpty)
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.xs),
+                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl, vertical: AppSpacing.xs),
                     child: Text(
                       'No folders created yet',
                       style: AppTypography.bodyMedium.copyWith(
@@ -397,22 +492,63 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     required VoidCallback onTap,
   }) {
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 2.0, horizontal: AppSpacing.xxs),
-      decoration: BoxDecoration(
-        color: isSelected ? AppColors.primary.withOpacity(0.12) : Colors.transparent,
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: ListTile(
-        leading: Icon(icon, color: isSelected ? AppColors.primary : AppColors.textSecondary),
-        title: Text(
-          title,
-          style: AppTypography.bodySemibold.copyWith(
-            color: isSelected ? AppColors.textPrimary : AppColors.textPrimary.withOpacity(0.85),
-            fontSize: 14,
+      margin: const EdgeInsets.symmetric(vertical: 3.0, horizontal: AppSpacing.sm),
+      child: PressableScale(
+        onTap: onTap,
+        scaleFactor: 0.98,
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: isSelected
+                ? LinearGradient(
+                    colors: [
+                      AppColors.primary.withOpacity(0.15),
+                      AppColors.primary.withOpacity(0.04),
+                    ],
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                  )
+                : null,
+            color: isSelected ? null : Colors.transparent,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: isSelected ? AppColors.primary.withOpacity(0.25) : Colors.transparent,
+              width: 1,
+            ),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(16),
+            child: Row(
+              children: [
+                // Active Vertical accent indicator
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  width: 4,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: isSelected ? AppColors.primary : Colors.transparent,
+                    borderRadius: const BorderRadius.horizontal(right: Radius.circular(4)),
+                  ),
+                ),
+                AppSpacing.w12,
+                Icon(
+                  icon,
+                  size: 20,
+                  color: isSelected ? AppColors.primary : AppColors.textSecondary,
+                ),
+                AppSpacing.w16,
+                Expanded(
+                  child: Text(
+                    title,
+                    style: AppTypography.bodySemibold.copyWith(
+                      color: isSelected ? AppColors.textPrimary : AppColors.textSecondary,
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-        onTap: onTap,
       ),
     );
   }
@@ -424,29 +560,74 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     required VoidCallback onDelete,
   }) {
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 2.0, horizontal: AppSpacing.xxs),
-      decoration: BoxDecoration(
-        color: isSelected ? AppColors.primary.withOpacity(0.12) : Colors.transparent,
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: ListTile(
-        leading: Icon(
-          isSelected ? Icons.folder_rounded : Icons.folder_open_rounded,
-          color: isSelected ? AppColors.primary : AppColors.textSecondary,
-        ),
-        title: Text(
-          folderName,
-          style: AppTypography.bodySemibold.copyWith(
-            color: isSelected ? AppColors.textPrimary : AppColors.textPrimary.withOpacity(0.85),
-            fontSize: 14,
+      margin: const EdgeInsets.symmetric(vertical: 3.0, horizontal: AppSpacing.sm),
+      child: PressableScale(
+        onTap: onTap,
+        scaleFactor: 0.98,
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: isSelected
+                ? LinearGradient(
+                    colors: [
+                      AppColors.primary.withOpacity(0.15),
+                      AppColors.primary.withOpacity(0.04),
+                    ],
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                  )
+                : null,
+            color: isSelected ? null : Colors.transparent,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: isSelected ? AppColors.primary.withOpacity(0.25) : Colors.transparent,
+              width: 1,
+            ),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(16),
+            child: Row(
+              children: [
+                // Active Vertical accent indicator
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  width: 4,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: isSelected ? AppColors.primary : Colors.transparent,
+                    borderRadius: const BorderRadius.horizontal(right: Radius.circular(4)),
+                  ),
+                ),
+                AppSpacing.w12,
+                Icon(
+                  isSelected ? Icons.folder_rounded : Icons.folder_open_rounded,
+                  size: 20,
+                  color: isSelected ? AppColors.primary : AppColors.textSecondary,
+                ),
+                AppSpacing.w16,
+                Expanded(
+                  child: Text(
+                    folderName,
+                    style: AppTypography.bodySemibold.copyWith(
+                      color: isSelected ? AppColors.textPrimary : AppColors.textSecondary,
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
+                IconButton(
+                  icon: Icon(
+                    Icons.delete_outline_rounded,
+                    size: 16,
+                    color: isSelected ? Colors.redAccent.withOpacity(0.8) : AppColors.textSecondary.withOpacity(0.5),
+                  ),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                  onPressed: onDelete,
+                ),
+                AppSpacing.w8,
+              ],
+            ),
           ),
         ),
-        trailing: IconButton(
-          icon: const Icon(Icons.delete_outline_rounded, size: 16, color: Colors.redAccent),
-          onPressed: onDelete,
-        ),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-        onTap: onTap,
       ),
     );
   }
@@ -456,8 +637,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF1E1E2C),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text('New Folder', style: AppTypography.headingLarge),
         content: TextField(
           controller: folderController,
@@ -465,14 +644,14 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           style: AppTypography.bodyLarge,
           decoration: InputDecoration(
             hintText: 'Enter folder name...',
-            hintStyle: AppTypography.bodyMedium.copyWith(color: Colors.white38),
-            focusedBorder: const UnderlineInputBorder(borderSide: BorderSide(color: AppColors.primary)),
+            hintStyle: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondary.withOpacity(0.5)),
+            contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Cancel', style: AppTypography.bodySemibold.copyWith(color: Colors.grey)),
+            child: Text('Cancel', style: AppTypography.bodySemibold.copyWith(color: AppColors.textSecondary)),
           ),
           TextButton(
             onPressed: () async {
@@ -495,17 +674,15 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF1E1E2C),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text('Delete folder "$folderName"?', style: AppTypography.headingLarge),
         content: Text(
           'Any notes tagged with this folder will not be deleted, but will become uncategorized.',
-          style: AppTypography.bodyMedium,
+          style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondary),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Cancel', style: AppTypography.bodySemibold.copyWith(color: Colors.grey)),
+            child: Text('Cancel', style: AppTypography.bodySemibold.copyWith(color: AppColors.textSecondary)),
           ),
           TextButton(
             onPressed: () async {
@@ -531,52 +708,111 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   Widget _buildEmptyState() {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.xxl),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(AppSpacing.lg),
-              decoration: BoxDecoration(
-                color: AppColors.cardBg,
-                shape: BoxShape.circle,
-                border: Border.all(color: AppColors.border, width: 1.5),
-              ),
-              child: Icon(Icons.notes_rounded, size: 48, color: AppColors.textSecondary.withOpacity(0.3)),
+        padding: const EdgeInsets.all(AppSpacing.xl),
+        child: Container(
+          padding: const EdgeInsets.all(AppSpacing.xl),
+          decoration: BoxDecoration(
+            color: AppColors.cardBg.withOpacity(0.4),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: AppColors.border.withOpacity(0.3),
+              width: 1,
             ),
-            AppSpacing.h16,
-            Text(
-              _selectedCategory == 'all' 
-                  ? 'No floating notes created yet' 
-                  : 'No notes in this folder',
-              style: AppTypography.headingMedium.copyWith(color: AppColors.textSecondary),
-            ),
-            AppSpacing.h24,
-            PressableScale(
-              onTap: () => _showNoteEditorSheet(context),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl, vertical: AppSpacing.sm),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 80,
+                height: 80,
                 decoration: BoxDecoration(
-                  color: AppColors.primary,
-                  borderRadius: BorderRadius.circular(12),
+                  color: AppColors.primary.withOpacity(0.05),
+                  shape: BoxShape.circle,
                 ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.add_rounded, size: 18, color: Colors.white),
-                    AppSpacing.w8,
-                    Text(
-                      'Create Note',
-                      style: AppTypography.bodySemibold.copyWith(color: Colors.white),
+                child: Center(
+                  child: Container(
+                    width: 56,
+                    height: 56,
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withOpacity(0.1),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: AppColors.primary.withOpacity(0.2),
+                        width: 1.5,
+                      ),
                     ),
-                  ],
+                    child: const Center(
+                      child: Icon(
+                        Icons.lightbulb_outline_rounded,
+                        size: 28,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                  ),
                 ),
               ),
-            ),
-          ],
+              AppSpacing.h24,
+              Text(
+                _selectedCategory == 'all' ? 'Capturing thoughts on the fly' : 'This category is empty',
+                style: AppTypography.headingLarge.copyWith(
+                  color: AppColors.textPrimary,
+                  fontSize: 18,
+                ),
+              ),
+              AppSpacing.h8,
+              Text(
+                _selectedCategory == 'all'
+                    ? 'Create floating notes that stay on top of other apps, check lists, reminders, and more.'
+                    : 'Notes assigned to this category or folder will show up right here.',
+                textAlign: TextAlign.center,
+                style: AppTypography.bodyMedium.copyWith(
+                  color: AppColors.textSecondary,
+                  fontSize: 13,
+                  height: 1.45,
+                ),
+              ),
+              AppSpacing.h24,
+              PressableScale(
+                onTap: () => _showNoteEditorSheet(context),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl, vertical: AppSpacing.sm),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [AppColors.primary, AppColors.accent],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.primary.withOpacity(0.25),
+                        blurRadius: 16,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.add_rounded, size: 18, color: Colors.white),
+                      AppSpacing.w8,
+                      Text(
+                        'Create First Note',
+                        style: AppTypography.bodySemibold.copyWith(
+                          color: Colors.white,
+                          fontSize: 13.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
-    ).animate().fadeIn(duration: AppMotion.page).scale(begin: const Offset(0.95, 0.95), curve: AppMotion.curvePage);
+    ).animate().fadeIn(duration: AppMotion.page).scale(begin: const Offset(0.97, 0.97), curve: AppMotion.curvePage);
   }
 
   Widget _buildPinterestGrid(List<Note> notes) {

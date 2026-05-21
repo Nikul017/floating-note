@@ -5,6 +5,7 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
+import android.appwidget.AppWidgetManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ServiceInfo
@@ -24,12 +25,14 @@ import androidx.core.app.NotificationCompat
 import com.example.floatingn_note.overlay.ChecklistItemData
 import com.example.floatingn_note.overlay.FloatingNoteView
 import com.example.floatingn_note.overlay.NoteData
+import com.example.floatingn_note.widget.ControlBarWidgetProvider
+import com.example.floatingn_note.widget.VisiblesWidgetProvider
 import io.flutter.plugin.common.MethodChannel
 
 class OverlayService : Service() {
 
     private lateinit var windowManager: WindowManager
-    private val activeOverlays = HashMap<String, FloatingNoteView>()
+    val activeOverlays = HashMap<String, FloatingNoteView>()
     private var deleteZoneView: DeleteZoneView? = null
 
     companion object {
@@ -39,9 +42,33 @@ class OverlayService : Service() {
 
         var instance: OverlayService? = null
         var methodChannel: MethodChannel? = null
-        private var overlaysVisible = true
+        var overlaysVisible = true
 
         fun isRunning(): Boolean = instance != null
+
+        fun updateWidgets(context: Context) {
+            val appWidgetManager = AppWidgetManager.getInstance(context)
+            
+            val controlBarName = android.content.ComponentName(context, ControlBarWidgetProvider::class.java)
+            val controlBarIds = appWidgetManager.getAppWidgetIds(controlBarName)
+            if (controlBarIds.isNotEmpty()) {
+                val intent = Intent(context, ControlBarWidgetProvider::class.java).apply {
+                    action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
+                    putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, controlBarIds)
+                }
+                context.sendBroadcast(intent)
+            }
+            
+            val visiblesName = android.content.ComponentName(context, VisiblesWidgetProvider::class.java)
+            val visiblesIds = appWidgetManager.getAppWidgetIds(visiblesName)
+            if (visiblesIds.isNotEmpty()) {
+                val intent = Intent(context, VisiblesWidgetProvider::class.java).apply {
+                    action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
+                    putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, visiblesIds)
+                }
+                context.sendBroadcast(intent)
+            }
+        }
 
         fun toggleVisibility() {
             instance?.let { service ->
@@ -50,6 +77,9 @@ class OverlayService : Service() {
                     for (view in service.activeOverlays.values) {
                         view.visibility = if (overlaysVisible) View.VISIBLE else View.GONE
                     }
+                    updateWidgets(service.applicationContext)
+                    val message = if (overlaysVisible) "Showing notes" else "Hiding notes"
+                    service.showFeedback(message)
                 }
             }
         }
@@ -65,6 +95,8 @@ class OverlayService : Service() {
                             view.expandFromDock()
                         }
                     }
+                    val message = if (anyExpanded) "Docking all notes" else "Expanding all notes"
+                    service.showFeedback(message)
                 }
             }
         }
@@ -153,12 +185,23 @@ class OverlayService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
             ACTION_QUICK_CREATE -> {
-                // Smoothly collapse the notification shade/drawer automatically!
                 val closeIntent = Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS)
                 sendBroadcast(closeIntent)
 
-                Handler(Looper.getMainLooper()).post {
-                    methodChannel?.invokeMethod("onQuickCreate", null)
+                showFeedback("Creating new note...")
+
+                if (methodChannel != null) {
+                    Handler(Looper.getMainLooper()).post {
+                        methodChannel?.invokeMethod("onQuickCreate", null)
+                    }
+                } else {
+                    val launchIntent = packageManager.getLaunchIntentForPackage(packageName)?.apply {
+                        action = "com.example.floatingn_note.QUICK_CREATE"
+                        this.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                    }
+                    if (launchIntent != null) {
+                        startActivity(launchIntent)
+                    }
                 }
             }
             ACTION_TOGGLE_VISIBILITY -> {
@@ -261,36 +304,11 @@ class OverlayService : Service() {
     private fun createOrUpdateOverlay(note: NoteData) {
         val existing = activeOverlays[note.id]
         if (existing != null) {
-            // Update fields and re-render
-            existing.note.title = note.title
-            existing.note.content = note.content
-            existing.note.color = note.color
-            existing.note.opacity = note.opacity
-            existing.note.isDocked = note.isDocked
-            existing.note.bubbleSize = note.bubbleSize
-            existing.note.bubbleShape = note.bubbleShape
-            existing.note.checklist = note.checklist
-            
-            // Adjust Window Params if toggling expand / collapse states
-            val wasDocked = existing.params.width == dpToPx(existing.note.bubbleSize)
-            if (note.isDocked != wasDocked) {
-                if (note.isDocked) {
-                    existing.note.isDocked = true
-                    existing.params.width = dpToPx(note.bubbleSize)
-                    existing.params.height = dpToPx(note.bubbleSize)
-                } else {
-                    existing.note.isDocked = false
-                    existing.params.width = dpToPx(note.width.toInt())
-                    existing.params.height = dpToPx(note.height.toInt())
-                }
-            }
-            
-            existing.alpha = note.opacity
-            
             try {
-                removeOverlay(note.id)
-                createNewOverlay(note)
-            } catch (e: Exception) {}
+                existing.updateNoteData(note)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         } else {
             createNewOverlay(note)
         }
@@ -409,6 +427,19 @@ class OverlayService : Service() {
     override fun onDestroy() {
         instance = null
         super.onDestroy()
+    }
+
+    fun showFeedback(message: String) {
+        android.widget.Toast.makeText(this, message, android.widget.Toast.LENGTH_SHORT).show()
+        val vibrator = getSystemService(Context.VIBRATOR_SERVICE) as? android.os.Vibrator
+        if (vibrator != null && vibrator.hasVibrator()) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                vibrator.vibrate(android.os.VibrationEffect.createOneShot(80, android.os.VibrationEffect.DEFAULT_AMPLITUDE))
+            } else {
+                @Suppress("DEPRECATION")
+                vibrator.vibrate(80)
+            }
+        }
     }
 
     fun dpToPx(dp: Int): Int {

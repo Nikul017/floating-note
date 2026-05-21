@@ -28,6 +28,26 @@ class NotesNotifier extends StateNotifier<List<Note>> {
     OverlayChannel.instance.onNoteDeletedCallback = (deletedId) {
       _deleteNoteFromState(deletedId);
     };
+
+    OverlayChannel.instance.onQuickCreateCallback = () async {
+      final count = state.length;
+      final offset = (count % 5) * 35.0;
+      return await addNote(
+        title: '',
+        content: '',
+        type: NoteType.plain,
+        color: 'yellow',
+        icon: '📌',
+        posX: 150.0 + offset,
+        posY: 250.0 + offset,
+      );
+    };
+
+    try {
+      await OverlayChannel.instance.notifyDartInitialized();
+    } catch (e) {
+      print('Error notifying native overlay of Dart initialization: $e');
+    }
   }
 
   Future<void> loadNotes() async {

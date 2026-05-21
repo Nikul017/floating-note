@@ -92,33 +92,51 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> with WidgetsBin
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: Text('Settings', style: AppTypography.headingLarge),
+        backgroundColor: AppColors.background,
+        elevation: 0,
+        centerTitle: true,
+        title: Text(
+          'Settings',
+          style: AppTypography.headingLarge.copyWith(
+            fontWeight: FontWeight.bold,
+            letterSpacing: -0.5,
+          ),
+        ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.textPrimary, size: 20),
           onPressed: () => Navigator.pop(context),
         ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppSpacing.md),
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Section title: Permissions & Services
-            Text(
-              'Permissions & Services',
-              style: AppTypography.headingMedium.copyWith(
-                color: AppColors.primary,
-                letterSpacing: 0.5,
-              ),
-            ),
+            _buildSectionHeader('Permissions & Services'),
             AppSpacing.h12,
             _buildSettingsCard(
               child: Column(
                 children: [
                   // Overlay Permission Row
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withOpacity(0.08),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: AppColors.primary.withOpacity(0.15),
+                            width: 1,
+                          ),
+                        ),
+                        child: const Icon(
+                          Icons.display_settings_rounded,
+                          color: AppColors.primary,
+                          size: 20,
+                        ),
+                      ),
+                      AppSpacing.w16,
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -134,7 +152,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> with WidgetsBin
                                   : 'Required to show floating notes over other apps',
                               style: AppTypography.caption.copyWith(
                                 color: _hasOverlayPermission
-                                    ? Colors.greenAccent
+                                    ? AppColors.primary
                                     : AppColors.textSecondary,
                               ),
                             ),
@@ -146,33 +164,74 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> with WidgetsBin
                         PressableScale(
                           onTap: _requestPermission,
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
                             decoration: BoxDecoration(
-                              color: AppColors.primary,
-                              borderRadius: BorderRadius.circular(12),
+                              gradient: const LinearGradient(
+                                colors: [AppColors.primary, AppColors.accent],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: BorderRadius.circular(20),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppColors.primary.withOpacity(0.3),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 3),
+                                ),
+                              ],
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(Icons.security, size: 14, color: Colors.white),
-                                AppSpacing.w4,
+                                const Icon(Icons.security_rounded, size: 14, color: Colors.white),
+                                AppSpacing.w8,
                                 Text(
                                   'Grant',
-                                  style: AppTypography.captionSemibold.copyWith(color: Colors.white),
+                                  style: AppTypography.captionSemibold.copyWith(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                               ],
                             ),
                           ),
                         )
                       else
-                        const Icon(Icons.check_circle_outline, color: Colors.greenAccent),
+                        Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withOpacity(0.1),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.check_circle_rounded,
+                            color: AppColors.primary,
+                            size: 22,
+                          ),
+                        ),
                     ],
                   ),
-                  const Divider(color: AppColors.border, height: 24),
+                  Divider(color: AppColors.border.withOpacity(0.5), height: 32, thickness: 1),
                   // Active Service Row
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: (_isServiceActive ? AppColors.primary : AppColors.textSecondary).withOpacity(0.08),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: (_isServiceActive ? AppColors.primary : AppColors.textSecondary).withOpacity(0.15),
+                            width: 1,
+                          ),
+                        ),
+                        child: Icon(
+                          Icons.offline_bolt_rounded,
+                          color: _isServiceActive ? AppColors.primary : AppColors.textSecondary,
+                          size: 20,
+                        ),
+                      ),
+                      AppSpacing.w16,
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -188,7 +247,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> with WidgetsBin
                                   : 'Start service to allow floating notes',
                               style: AppTypography.caption.copyWith(
                                 color: _isServiceActive
-                                    ? Colors.greenAccent
+                                    ? AppColors.primary
                                     : AppColors.textSecondary,
                               ),
                             ),
@@ -197,7 +256,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> with WidgetsBin
                       ),
                       Switch(
                         value: _isServiceActive,
-                        activeColor: AppColors.primary,
+                        activeColor: AppColors.accent,
+                        activeTrackColor: AppColors.primary.withOpacity(0.2),
+                        inactiveThumbColor: AppColors.textSecondary,
+                        inactiveTrackColor: AppColors.cardBg,
+                        trackOutlineColor: WidgetStateProperty.resolveWith<Color?>(
+                          (states) {
+                            if (states.contains(WidgetState.selected)) {
+                              return AppColors.primary.withOpacity(0.5);
+                            }
+                            return AppColors.border;
+                          },
+                        ),
                         onChanged: _toggleService,
                       ),
                     ],
@@ -205,29 +275,35 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> with WidgetsBin
                 ],
               ),
             ).animate().fadeIn(duration: AppMotion.page).slideY(begin: 0.05, end: 0, curve: AppMotion.curvePage),
-            AppSpacing.h32,
+            AppSpacing.h24,
 
-            // Section title: Appearance Settings
-            Text(
-              'Appearance Settings',
-              style: AppTypography.headingMedium.copyWith(
-                color: AppColors.primary,
-                letterSpacing: 0.5,
-              ),
-            ),
+            _buildSectionHeader('Appearance Settings'),
             AppSpacing.h12,
             _buildSettingsCard(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'Global Floating Bubble Size',
-                    style: AppTypography.bodySemibold,
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.photo_size_select_large_rounded,
+                        color: AppColors.primary,
+                        size: 18,
+                      ),
+                      AppSpacing.w8,
+                      Text(
+                        'Global Floating Bubble Size',
+                        style: AppTypography.bodySemibold,
+                      ),
+                    ],
                   ),
                   AppSpacing.h4,
-                  Text(
-                    'Choose the size of all active floating bubbles on the screen.',
-                    style: AppTypography.caption.copyWith(color: AppColors.textSecondary),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 26.0),
+                    child: Text(
+                      'Choose the size of all active floating bubbles on the screen.',
+                      style: AppTypography.caption.copyWith(color: AppColors.textSecondary),
+                    ),
                   ),
                   AppSpacing.h16,
                   Row(
@@ -238,15 +314,28 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> with WidgetsBin
                       _buildSizeOption(75, 'Large', settings.globalBubbleSize),
                     ],
                   ),
-                  const Divider(color: AppColors.border, height: 32),
-                  Text(
-                    'Global Floating Bubble Shape',
-                    style: AppTypography.bodySemibold,
+                  Divider(color: AppColors.border.withOpacity(0.5), height: 32, thickness: 1),
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.category_rounded,
+                        color: AppColors.primary,
+                        size: 18,
+                      ),
+                      AppSpacing.w8,
+                      Text(
+                        'Global Floating Bubble Shape',
+                        style: AppTypography.bodySemibold,
+                      ),
+                    ],
                   ),
                   AppSpacing.h4,
-                  Text(
-                    'Choose the shape of the docked floating notes.',
-                    style: AppTypography.caption.copyWith(color: AppColors.textSecondary),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 26.0),
+                    child: Text(
+                      'Choose the shape of the docked floating notes.',
+                      style: AppTypography.caption.copyWith(color: AppColors.textSecondary),
+                    ),
                   ),
                   AppSpacing.h16,
                   Wrap(
@@ -268,20 +357,55 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> with WidgetsBin
     );
   }
 
+  Widget _buildSectionHeader(String title) {
+    return Row(
+      children: [
+        Container(
+          width: 4,
+          height: 18,
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [AppColors.primary, AppColors.accent],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+            ),
+            borderRadius: BorderRadius.circular(2),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primary.withOpacity(0.3),
+                blurRadius: 4,
+                offset: const Offset(1, 1),
+              ),
+            ],
+          ),
+        ),
+        AppSpacing.w12,
+        Text(
+          title,
+          style: AppTypography.headingMedium.copyWith(
+            color: AppColors.textPrimary,
+            fontWeight: FontWeight.w600, // Outfit-semibold
+            letterSpacing: 0.2,
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildSettingsCard({required Widget child}) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
         color: AppColors.cardBg,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.border, width: 1.5),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: AppColors.border.withOpacity(0.4), width: 1.5),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.12),
-            blurRadius: 16,
-            spreadRadius: -4,
-            offset: const Offset(0, 8),
+            color: Colors.black.withOpacity(0.15),
+            blurRadius: 20,
+            spreadRadius: -6,
+            offset: const Offset(0, 10),
           )
         ],
       ),
@@ -292,30 +416,69 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> with WidgetsBin
   Widget _buildSizeOption(int size, String label, int currentSize) {
     final isSelected = currentSize == size;
     return Expanded(
-      child: PressableScale(
-        onTap: () async {
-          await ref.read(settingsProvider.notifier).updateBubbleSize(size);
-          if (_isServiceActive) {
-            _syncAllOverlaysWithSettings();
-          }
-        },
-        child: Container(
-          margin: const EdgeInsets.symmetric(horizontal: 4),
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          decoration: BoxDecoration(
-            color: isSelected ? AppColors.primary.withOpacity(0.12) : Colors.transparent,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: isSelected ? AppColors.primary : AppColors.border,
-              width: 1.5,
+      child: AnimatedScale(
+        scale: isSelected ? 1.04 : 1.0,
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOutBack,
+        child: PressableScale(
+          onTap: () async {
+            await ref.read(settingsProvider.notifier).updateBubbleSize(size);
+            if (_isServiceActive) {
+              _syncAllOverlaysWithSettings();
+            }
+          },
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 4),
+            padding: const EdgeInsets.all(1.5), // Gradient border width spacer
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              gradient: isSelected
+                  ? const LinearGradient(
+                      colors: [AppColors.primary, AppColors.accent],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    )
+                  : null,
+              boxShadow: isSelected
+                  ? [
+                      BoxShadow(
+                        color: AppColors.primary.withOpacity(0.15),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ]
+                  : null,
             ),
-          ),
-          alignment: Alignment.center,
-          child: Text(
-            label,
-            style: AppTypography.captionSemibold.copyWith(
-              color: isSelected ? AppColors.primary : AppColors.textSecondary,
-              fontSize: 12,
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(14.5),
+                color: isSelected ? null : AppColors.cardBg.withOpacity(0.5),
+                gradient: isSelected
+                    ? LinearGradient(
+                        colors: [
+                          AppColors.primary.withOpacity(0.12),
+                          AppColors.primary.withOpacity(0.02),
+                        ],
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                      )
+                    : null,
+                border: isSelected
+                    ? null
+                    : Border.all(
+                        color: AppColors.border.withOpacity(0.4),
+                        width: 1,
+                      ),
+              ),
+              alignment: Alignment.center,
+              child: Text(
+                label,
+                style: AppTypography.bodySemibold.copyWith(
+                  color: isSelected ? AppColors.primary : AppColors.textSecondary,
+                  fontSize: 12,
+                ),
+              ),
             ),
           ),
         ),
@@ -325,41 +488,79 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> with WidgetsBin
 
   Widget _buildShapeOption(String shapeValue, String label, IconData icon, String currentShape) {
     final isSelected = currentShape == shapeValue;
-    return PressableScale(
-      onTap: () async {
-        await ref.read(settingsProvider.notifier).updateBubbleShape(shapeValue);
-        if (_isServiceActive) {
-          _syncAllOverlaysWithSettings();
-        }
-      },
-      child: AnimatedContainer(
-        duration: AppMotion.fast,
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-        decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary.withOpacity(0.12) : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isSelected ? AppColors.primary : AppColors.border,
-            width: 1.5,
+    return AnimatedScale(
+      scale: isSelected ? 1.04 : 1.0,
+      duration: const Duration(milliseconds: 200),
+      curve: Curves.easeOutBack,
+      child: PressableScale(
+        onTap: () async {
+          await ref.read(settingsProvider.notifier).updateBubbleShape(shapeValue);
+          if (_isServiceActive) {
+            _syncAllOverlaysWithSettings();
+          }
+        },
+        child: Container(
+          padding: const EdgeInsets.all(1.5), // Gradient border width spacer
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            gradient: isSelected
+                ? const LinearGradient(
+                    colors: [AppColors.primary, AppColors.accent],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  )
+                : null,
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: AppColors.primary.withOpacity(0.15),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ]
+                : null,
           ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              icon,
-              size: 15,
-              color: isSelected ? AppColors.primary : AppColors.textSecondary,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(14.5),
+              color: isSelected ? null : AppColors.cardBg.withOpacity(0.5),
+              gradient: isSelected
+                  ? LinearGradient(
+                      colors: [
+                        AppColors.primary.withOpacity(0.12),
+                        AppColors.primary.withOpacity(0.02),
+                      ],
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                    )
+                  : null,
+              border: isSelected
+                  ? null
+                  : Border.all(
+                      color: AppColors.border.withOpacity(0.4),
+                      width: 1,
+                    ),
             ),
-            AppSpacing.w8,
-            Text(
-              label,
-              style: AppTypography.captionSemibold.copyWith(
-                color: isSelected ? AppColors.primary : AppColors.textSecondary,
-                fontSize: 11,
-              ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  icon,
+                  size: 16,
+                  color: isSelected ? AppColors.primary : AppColors.textSecondary,
+                ),
+                AppSpacing.w8,
+                Text(
+                  label,
+                  style: AppTypography.bodySemibold.copyWith(
+                    color: isSelected ? AppColors.primary : AppColors.textSecondary,
+                    fontSize: 11.5,
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );

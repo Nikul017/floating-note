@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
-  // Main app dashboard theme (Sleek Dark Mode)
-  static const Color background = Color(0xFF0F0F12);
-  static const Color cardBg = Color(0xFF16161F);
-  static const Color cardBgGlass = Color(0x9916161F);
-  static const Color primary = Color(0xFF7C4DFF); // Vibrant Violet
-  static const Color accent = Color(0xFF00E5FF);  // Electric Cyan
-  static const Color textPrimary = Color(0xFFF3F3F7);
-  static const Color textSecondary = Color(0xFF8F8FA3);
-  static const Color border = Color(0xFF2C2C3E);
+  // Main app dashboard theme (Premium Slate-Emerald Theme)
+  static const Color background = Color(0xFF0B0F19);
+  static const Color cardBg = Color(0xFF131926);
+  static const Color cardBgGlass = Color(0xCC131926);
+  static const Color primary = Color(0xFF10B981); // Vibrant Emerald
+  static const Color accent = Color(0xFF34D399);  // Mint/Seafoam Accent
+  static const Color textPrimary = Color(0xFFF8FAFC);
+  static const Color textSecondary = Color(0xFF94A3B8);
+  static const Color border = Color(0xFF222B3E);
 
   // Curated premium pastel sticky note colors (Hex strings mapped to Flutter Colors)
   static const Map<String, Color> stickyNoteColors = {

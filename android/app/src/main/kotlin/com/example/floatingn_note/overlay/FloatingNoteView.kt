@@ -107,6 +107,8 @@ class FloatingNoteView(
             height = if (isExpanded) WindowManager.LayoutParams.WRAP_CONTENT else dpToPx(note.bubbleSize)
         }
 
+        setBackgroundColor(Color.TRANSPARENT)
+
         setupViews()
         applyTheme()
         updateLayoutState()
@@ -114,7 +116,7 @@ class FloatingNoteView(
 
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
-        if (note.title == "New Note" && note.content == "Tap to write...") {
+        if (note.title.isEmpty() && note.content.isEmpty() && note.checklist.isEmpty()) {
             postDelayed({
                 enableFocusAndEditing()
             }, 150)
@@ -427,6 +429,7 @@ class FloatingNoteView(
     private fun updateLayoutState() {
         if (isExpanded) {
             dockBubble.visibility = View.GONE
+            mainCard.visibility = View.VISIBLE
             if (isEditing) {
                 titleView.visibility = View.GONE
                 titleEdit.visibility = View.VISIBLE
@@ -476,12 +479,38 @@ class FloatingNoteView(
             contentEdit.visibility = View.GONE
             checklistContainer.visibility = View.GONE
             editColorPicker.visibility = View.GONE
+            
+            mainCard.visibility = View.GONE
             dockBubble.visibility = View.VISIBLE
+            
             params.width = dpToPx(note.bubbleSize)
             params.height = dpToPx(note.bubbleSize)
         }
         if (isAttachedToWindow) {
             windowManager.updateViewLayout(this, params)
+        }
+    }
+
+    fun updateNoteData(newNote: NoteData) {
+        note.title = newNote.title
+        note.content = newNote.content
+        note.color = newNote.color
+        note.opacity = newNote.opacity
+        note.isDocked = newNote.isDocked
+        note.bubbleSize = newNote.bubbleSize
+        note.bubbleShape = newNote.bubbleShape
+        note.checklist = newNote.checklist
+
+        params.x = newNote.posX.toInt()
+        params.y = newNote.posY.toInt()
+
+        isExpanded = !note.isDocked
+
+        if (!isExpanded) {
+            snapToEdges(dpToPx(note.bubbleSize))
+        } else {
+            updateLayoutState()
+            applyTheme()
         }
     }
 
@@ -496,8 +525,10 @@ class FloatingNoteView(
         val screenHeight = displayMetrics.heightPixels
 
         val viewWidth = dpToPx(240) // Default centering width
-        val targetX = (screenWidth - viewWidth) / 2
-        val targetY = (screenHeight - dpToPx(200)) / 2
+        val expandedCount = OverlayService.instance?.activeOverlays?.values?.count { it.isExpanded } ?: 0
+        val staggerOffset = dpToPx((expandedCount % 5) * 20)
+        val targetX = (screenWidth - viewWidth) / 2 + staggerOffset
+        val targetY = (screenHeight - dpToPx(200)) / 2 + staggerOffset
 
         note.posX = targetX.toFloat()
         note.posY = targetY.toFloat()
@@ -730,7 +761,9 @@ class FloatingNoteView(
                 initialY = params.y
                 initialTouchX = event.rawX
                 initialTouchY = event.rawY
-                OverlayService.showDeleteZone()
+                if (!isExpanded) {
+                    OverlayService.showDeleteZone()
+                }
                 return true
             }
             MotionEvent.ACTION_MOVE -> {
@@ -774,8 +807,10 @@ class FloatingNoteView(
                 windowManager.updateViewLayout(this, params)
 
                 // Check for overlapping the bottom delete trash can zone
-                val overTrash = OverlayService.isOverDeleteZone(this)
-                OverlayService.updateDeleteZoneHover(this, overTrash)
+                val overTrash = if (!isExpanded) OverlayService.isOverDeleteZone(this) else false
+                if (!isExpanded) {
+                    OverlayService.updateDeleteZoneHover(this, overTrash)
+                }
 
                 // Visual "getting sucked into trash" scaling and opacity effect
                 if (overTrash) {
@@ -795,9 +830,11 @@ class FloatingNoteView(
                 val dy = event.rawY - initialTouchY
 
                 // Check overlap first before the delete zone is hidden
-                val overTrash = OverlayService.isOverDeleteZone(this)
+                val overTrash = if (!isExpanded) OverlayService.isOverDeleteZone(this) else false
 
-                OverlayService.hideDeleteZone()
+                if (!isExpanded) {
+                    OverlayService.hideDeleteZone()
+                }
 
                 // Reset view scale and opacity to normal
                 scaleX = 1.0f
@@ -860,10 +897,9 @@ class FloatingNoteView(
         val safetyBottomMargin = if (isExpanded) 0 else dpToPx(20)
         val maxY = screenHeight - viewHeight - bottomMarginPx - safetyBottomMargin
 
-        // Ensure Y stays bounded within the screen safe-zone margins
-        if (params.y < topMarginPx) params.y = topMarginPx
-        if (params.y > maxY) params.y = maxY
-        note.posY = params.y.toFloat()
+        var targetY = params.y
+        val bubbleHeight = dpToPx(note.bubbleSize)
+        val safetyBottom = screenHeight - bottomMarginPx - safetyBottomMargin - bubbleHeight
 
         val targetX = if (params.x + viewWidth / 2 < screenWidth / 2) {
             0 // Snap to left edge
@@ -871,26 +907,73 @@ class FloatingNoteView(
             screenWidth - viewWidth // Snap to right edge
         }
 
-        note.posX = targetX.toFloat()
+        // Collision detection for docked notes on the same side
+        val otherDockedViews = OverlayService.instance?.activeOverlays?.values
+            ?.filter { it != this && !it.isExpanded && it.note.isDocked && it.params.x == targetX }
+            ?.sortedBy { it.params.y } ?: emptyList()
 
-        val animator = ValueAnimator.ofInt(params.x, targetX).apply {
-            duration = 200
-            addUpdateListener { animation ->
-                params.x = animation.animatedValue as Int
-                try {
-                    windowManager.updateViewLayout(this@FloatingNoteView, params)
-                } catch (e: Exception) {}
-            }
-            addListener(object : Animator.AnimatorListener {
-                override fun onAnimationStart(animation: Animator) {}
-                override fun onAnimationEnd(animation: Animator) {
-                    onUpdate(note)
+        var attempts = 0
+        var foundPosition = false
+        while (attempts < 50 && !foundPosition) {
+            var overlap = false
+            for (other in otherDockedViews) {
+                val otherY = other.params.y
+                if (Math.abs(targetY - otherY) < bubbleHeight) {
+                    overlap = true
+                    targetY = otherY + bubbleHeight + dpToPx(4)
+                    break
                 }
-                override fun onAnimationCancel(animation: Animator) {}
-                override fun onAnimationRepeat(animation: Animator) {}
-            })
+            }
+            if (!overlap) {
+                foundPosition = true
+            } else {
+                if (targetY > safetyBottom) {
+                    targetY = topMarginPx
+                }
+                attempts++
+            }
         }
-        animator.start()
+
+        if (targetY < topMarginPx) targetY = topMarginPx
+        if (targetY > safetyBottom) targetY = safetyBottom
+
+        note.posX = targetX.toFloat()
+        note.posY = targetY.toFloat()
+
+        val startX = params.x
+        val startY = params.y
+
+        val animatorX = ValueAnimator.ofInt(startX, targetX)
+        val animatorY = ValueAnimator.ofInt(startY, targetY)
+
+        animatorX.duration = 200
+        animatorY.duration = 200
+
+        animatorX.addUpdateListener { animation ->
+            params.x = animation.animatedValue as Int
+            try {
+                windowManager.updateViewLayout(this@FloatingNoteView, params)
+            } catch (e: Exception) {}
+        }
+
+        animatorY.addUpdateListener { animation ->
+            params.y = animation.animatedValue as Int
+            try {
+                windowManager.updateViewLayout(this@FloatingNoteView, params)
+            } catch (e: Exception) {}
+        }
+
+        animatorX.addListener(object : Animator.AnimatorListener {
+            override fun onAnimationStart(animation: Animator) {}
+            override fun onAnimationEnd(animation: Animator) {
+                onUpdate(note)
+            }
+            override fun onAnimationCancel(animation: Animator) {}
+            override fun onAnimationRepeat(animation: Animator) {}
+        })
+
+        animatorX.start()
+        animatorY.start()
     }
 
     private fun dpToPx(dp: Int): Int {

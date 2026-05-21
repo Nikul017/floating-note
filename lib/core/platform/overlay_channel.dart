@@ -13,6 +13,7 @@ class OverlayChannel {
   // Callbacks registered by Riverpod or view layers
   void Function(Note note)? onNoteUpdatedCallback;
   void Function(String noteId)? onNoteDeletedCallback;
+  Future<Note> Function()? onQuickCreateCallback;
 
   Future<void> _handleMethodCall(MethodCall call) async {
     try {
@@ -69,28 +70,32 @@ class OverlayChannel {
           break;
 
         case 'onQuickCreate':
-          final newNote = Note(
-            id: DateTime.now().millisecondsSinceEpoch.toString(),
-            title: 'New Note',
-            content: 'Tap to write...',
-            type: NoteType.plain,
-            color: 'yellow',
-            icon: '📌',
-            opacity: 0.95,
-            posX: 150.0,
-            posY: 250.0,
-            width: 250.0,
-            height: 220.0,
-            isDocked: false,
-            isLocked: false,
-            bubbleSize: 60,
-            createdAt: DateTime.now().millisecondsSinceEpoch,
-            updatedAt: DateTime.now().millisecondsSinceEpoch,
-          );
-          await DatabaseService.instance.insertNote(newNote);
-          await createOverlay(newNote);
-          if (onNoteUpdatedCallback != null) {
-            onNoteUpdatedCallback!(newNote);
+          if (onQuickCreateCallback != null) {
+            await onQuickCreateCallback!();
+          } else {
+            final newNote = Note(
+              id: DateTime.now().millisecondsSinceEpoch.toString(),
+              title: '',
+              content: '',
+              type: NoteType.plain,
+              color: 'yellow',
+              icon: '📌',
+              opacity: 0.95,
+              posX: 150.0,
+              posY: 250.0,
+              width: 250.0,
+              height: 220.0,
+              isDocked: false,
+              isLocked: false,
+              bubbleSize: 60,
+              createdAt: DateTime.now().millisecondsSinceEpoch,
+              updatedAt: DateTime.now().millisecondsSinceEpoch,
+            );
+            await DatabaseService.instance.insertNote(newNote);
+            await createOverlay(newNote);
+            if (onNoteUpdatedCallback != null) {
+              onNoteUpdatedCallback!(newNote);
+            }
           }
           break;
 
@@ -186,5 +191,13 @@ class OverlayChannel {
     // Add checklist items as raw JSON maps so Kotlin can render checkbox lists natively
     noteMap['checklist'] = note.checklistItems.map((item) => item.toMap()).toList();
     return noteMap;
+  }
+
+  Future<void> notifyDartInitialized() async {
+    try {
+      await _channel.invokeMethod('onDartInitialized');
+    } on PlatformException catch (e) {
+      print('Failed to notify Dart initialized: ${e.message}');
+    }
   }
 }
