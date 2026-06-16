@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../core/typography/app_typography.dart';
 import 'app_colors.dart';
 
@@ -8,9 +7,9 @@ class AppTheme {
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.light,
-      textTheme: GoogleFonts.plusJakartaSansTextTheme(
-        ThemeData.light().textTheme,
-      ),
+      textTheme: ThemeData.light().textTheme.apply(
+            fontFamily: 'PlusJakartaSans',
+          ),
       colorScheme: const ColorScheme.light(
         background: AppColors.background,
         surface: AppColors.cardBg,
